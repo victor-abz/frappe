@@ -76,8 +76,7 @@ frappe.upload = {
 					parent: $uploaded_files_wrapper,
 					columns: columns,
 					values: file_array,
-					with_checkbox: 1,
-					// with_remove: 1,
+					with_remove: 1,
 					on_change: {
 						is_public: function(filename, is_public) {
 							let attached_files = $upload.data('attached_files');

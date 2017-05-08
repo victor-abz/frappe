@@ -7,10 +7,7 @@ frappe.ui.SimpleList = class SimpleList {
 		with_checkbox = 0,
 		with_remove = 0,
 		on_change = {},
-		empty_state = null,
-
-		placeholder = {}	// height, icon, btn-action?
-
+		empty_state = null
 	} = {}) {
 
 		Object.assign(this, {
