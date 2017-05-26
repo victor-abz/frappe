@@ -1,6 +1,6 @@
 
 
-asdf(
+asdfasdf)
 
 $(function() {
 	if(hljs) {
