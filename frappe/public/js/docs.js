@@ -1,7 +1,7 @@
 
 
 if(testing) {
-
+}
 
 $(function() {
 	if(hljs) {
