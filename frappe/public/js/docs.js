@@ -1,7 +1,6 @@
 
 
-if(testing) {
-}
+asdf)
 
 $(function() {
 	if(hljs) {
