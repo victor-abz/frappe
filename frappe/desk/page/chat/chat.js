@@ -1,6 +1,9 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // MIT License. See license.txt
 
+testing again
+
+
 frappe.pages.chat.on_page_load = function(parent) {
 	var page = frappe.ui.make_app_page({
 		parent: parent,
