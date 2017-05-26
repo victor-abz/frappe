@@ -1,6 +1,6 @@
 
 
-asdf
+if(testing) {
 
 
 $(function() {
@@ -48,8 +48,6 @@ $(function() {
 	});
 
 });
-
-testing agaian
 
 frappe = {
 	get_modal: function(title, body_html) {
