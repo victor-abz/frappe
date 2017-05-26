@@ -50,6 +50,8 @@ $(function() {
 
 });
 
+testing agaian
+
 frappe = {
 	get_modal: function(title, body_html) {
 		var modal = $('<div class="modal" style="overflow: auto;" tabindex="-1">\
