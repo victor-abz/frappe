@@ -995,3 +995,38 @@ input[type="checkbox"]:checked:before {
     visibility: visible;
   }
 }
+.checkpoint-progress {
+  position: relative;
+}
+.checkpoint-progress .cp-progress {
+  position: absolute;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #fff;
+  border: 1px solid #EBEFF2;
+  width: 100%;
+}
+.checkpoint-progress .cp-progress.tracker {
+  border: none;
+  width: 0%;
+  background-color: #7679FC;
+}
+.checkpoint-progress .dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -3px;
+  border-radius: 50%;
+  border: 1px solid #EBEFF2;
+  background-color: #fff;
+  transform: translateX(-50%);
+}
+.checkpoint-progress .dot.filled {
+  border: none;
+  background-color: #7679FC;
+}
+.checkpoint-progress .title {
+  position: absolute;
+  top: -20px;
+  transform: translateX(-50%);
+}

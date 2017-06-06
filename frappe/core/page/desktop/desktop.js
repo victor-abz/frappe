@@ -51,6 +51,7 @@ $.extend(frappe.desktop, {
 		}));
 
 		frappe.desktop.setup_help_messages();
+		frappe.desktop.setup_first_run();
 		frappe.desktop.setup_module_click();
 
 		// notifications
@@ -61,6 +62,44 @@ $.extend(frappe.desktop, {
 
 		$(document).trigger("desktop-render");
 
+	},
+
+	setup_first_run: function() {
+		var wrapper = frappe.desktop.wrapper.find('.help-message-wrapper');
+		// var $help_messages = wrapper.find('.help-messages');
+
+		var steps = [
+			'Setup',
+			'Select Domain',
+			'Quotation',
+			'Sales Order',
+			'Sales Invoice'
+		];
+
+		wrapper.find('.help-messages').html(`<p>Your Progress</p>`);
+
+		var cp = new frappe.ui.CheckpointProgress({
+			parent: wrapper.find('.help-messages'),
+			steps: steps
+		});
+
+		cp.wrapper.css({
+			width: '80%',
+			margin: '0 auto'
+		});
+
+		cp.set_completed(5);
+
+		// var progress =
+		// 	`<p>
+		// 		Your progress
+		// 	</p>
+		// 	<div class="progress">
+		// 		<div class="progress-bar progress-bar-success" style="width: 20%">
+		// 		</div>
+		// 	</div>`;
+
+		// wrapper.find('.help-messages').html(progress);
 	},
 
 	setup_help_messages: function() {

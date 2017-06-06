@@ -918,3 +918,46 @@ input[type="checkbox"] {
 		 visibility: visible;
 	}
 }
+
+// Checkpoint Progress
+
+.checkpoint-progress {
+	position: relative;
+
+	.cp-progress {
+		position: absolute;
+		height: 4px;
+		border-radius: 2px;
+		background-color: #fff;
+		border: 1px solid @light-border-color;
+		width: 100%;
+
+		&.tracker {
+			border: none;
+			width: 0%;
+			background-color: @blue;
+		}
+	}
+
+	.dot {
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		top: -3px;
+		border-radius: 50%;
+		border: 1px solid @light-border-color;
+		background-color: #fff;
+		transform: translateX(-50%);
+
+		&.filled {
+			border: none;
+			background-color: @blue;
+		}
+	}
+
+	.title {
+		position: absolute;
+		top: -20px;
+		transform: translateX(-50%);
+	}
+}

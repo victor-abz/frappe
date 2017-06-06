@@ -108,6 +108,7 @@
 		"public/js/frappe/form/multi_select_dialog.js",
 		"public/js/frappe/ui/dialog.js",
 		"public/js/frappe/ui/app_icon.js",
+		"public/js/frappe/ui/checkpoint_progress.js",
 
 		"public/js/frappe/model/model.js",
 		"public/js/frappe/db.js",
