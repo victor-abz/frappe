@@ -1,0 +1,9 @@
+machine:
+  python:
+    version: 2.7
+  node:
+    version: 7.10.0
+  pre:
+    - sudo apt-get purge -y mysql-common mysql-server mysql-client
+    - wget https://raw.githubusercontent.com/frappe/bench/master/playbooks/install.py
+    - sudo python install.py --develop
