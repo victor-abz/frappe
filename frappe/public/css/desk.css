@@ -1040,3 +1040,25 @@ input[type="checkbox"]:checked:before {
   padding: 10px 15px;
   border-bottom: 1px solid #d1d8dd;
 }
+.first-run-wrapper {
+  background-color: #fff;
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  border-radius: 3px;
+  box-shadow: 0 0px 5px rgba(0, 0, 0, 0.1);
+  min-width: 170px;
+}
+.first-run-wrapper .head {
+  padding: 10px 15px;
+  border-bottom: 1px solid #d1d8dd;
+}
+.first-run-wrapper .body {
+  padding: 10px 15px;
+}
+.first-run-wrapper li:not(:last-child) {
+  padding-bottom: 5px;
+}
+.first-run-wrapper span.fa {
+  margin-right: 5px;
+}

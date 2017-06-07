@@ -976,3 +976,33 @@ input[type="checkbox"] {
 		border-bottom: 1px solid @border-color;
 	}
 }
+
+// first-run
+
+.first-run-wrapper {
+	background-color: #fff;
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	border-radius: 3px;
+	box-shadow: 0 0px 5px rgba(0, 0, 0, 0.1);
+	min-width: 170px;
+
+	.head {
+		padding: 10px 15px;
+		border-bottom: 1px solid @border-color;
+	}
+
+	.body {
+		padding: 10px 15px;
+		// font-size: @text-medium;
+	}
+
+	li:not(:last-child) {
+		padding-bottom: 5px;
+	}
+
+	span.fa {
+		margin-right: 5px;
+	}
+}

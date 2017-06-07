@@ -51,7 +51,7 @@ $.extend(frappe.desktop, {
 		}));
 
 		frappe.desktop.setup_help_messages();
-		frappe.desktop.setup_first_run();
+		frappe.desktop.setup_vertical_first_run();
 		frappe.desktop.setup_module_click();
 
 		// notifications
@@ -64,39 +64,44 @@ $.extend(frappe.desktop, {
 
 	},
 
-	setup_first_run: function() {
-		var wrapper = frappe.desktop.wrapper.find('.help-message-wrapper');
-		var domain_steps = {
-			'Services': [
-				'Select Domain',
-				'Lead',
-				'Opportunity',
-				'Quotation',
-				'Sales Order',
-				'Project',
-				'Timesheet',
-				'Sales Invoice',
-				'Payment'
-			]
-		};
+	setup_vertical_first_run: function() {
+		var wrapper = $('#page-desktop');
 
-		frappe.db.get_value('Global Defaults', null, 'default_company', (r) => {
-			var { default_company } = r;
-			frappe.db.get_value('Company', {name: default_company}, 'domain', (r) => {
-				var { domain } = r;
-				var steps = domain_steps[domain];
-				if (!steps) return;
-				frappe.desktop.render_first_run(wrapper.find('.help-messages'), steps);
+		var steps = [
+			['Select Domain', ''],
+			['Customer', 'List/Customer'],
+			['Quotation', 'List/Quotation'],
+			['Sales Order', 'List/Sales Order'],
+			['Project', 'List/Project'],
+			['Sales Invoice', 'List/Sales Invoice'],
+		];
+
+		var first_run_wrapper = wrapper.append(`
+			<div class="first-run-wrapper">
+				<div class="head">
+					<span class="indicator blue">Your Progress</span>
+				</div>
+				<div class="body">
+					<ul class="list-unstyled">
+						${steps.map(step => `<li><a href="#${step[1]}"><span class="fa fa-circle text-extra-muted"></span>${step[0]}</a></li>`).join("")}
+					</ul>
+				</div>
+			</div>
+		`);
+
+		set_completed(2);
+
+		function set_completed(number) {
+			first_run_wrapper.find('li').slice(0, number).each((i, el) => {
+				$(el).css('text-decoration', 'line-through')
+					.find('a')
+					.attr('href', '')
+					.click((e) => e.preventDefault());
+				$(el).find('span.fa')
+					.removeClass('fa-circle text-extra-muted')
+					.addClass('fa-check-circle text-success');
 			});
-		});
-	},
-
-	render_first_run: function(parent, steps) {
-		var cp = new frappe.ui.CheckpointProgress({
-			parent,
-			steps
-		});
-		cp.set_completed(2);
+		}
 	},
 
 	setup_help_messages: function() {
