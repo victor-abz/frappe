@@ -995,38 +995,48 @@ input[type="checkbox"]:checked:before {
     visibility: visible;
   }
 }
-.checkpoint-progress {
+.checkpoint-progress-wrapper .checkpoint-progress {
   position: relative;
+  height: 4px;
+  margin: 44px auto 20px auto;
+  width: 80%;
 }
-.checkpoint-progress .cp-progress {
+.checkpoint-progress-wrapper .cp-progress {
   position: absolute;
   height: 4px;
   border-radius: 2px;
   background-color: #fff;
-  border: 1px solid #EBEFF2;
+  border: 1px solid #d1d8dd;
   width: 100%;
 }
-.checkpoint-progress .cp-progress.tracker {
+.checkpoint-progress-wrapper .cp-progress.tracker {
   border: none;
   width: 0%;
-  background-color: #7679FC;
+  background-color: #98d85b;
 }
-.checkpoint-progress .dot {
+.checkpoint-progress-wrapper .dot {
   position: absolute;
   width: 10px;
   height: 10px;
   top: -3px;
   border-radius: 50%;
-  border: 1px solid #EBEFF2;
+  border: 1px solid #d1d8dd;
   background-color: #fff;
   transform: translateX(-50%);
 }
-.checkpoint-progress .dot.filled {
+.checkpoint-progress-wrapper .dot.filled {
   border: none;
-  background-color: #7679FC;
+  background-color: #98d85b;
 }
-.checkpoint-progress .title {
+.checkpoint-progress-wrapper .title {
   position: absolute;
-  top: -20px;
+  top: -24px;
   transform: translateX(-50%);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.checkpoint-progress-wrapper .cp-head {
+  margin: -10px -15px 0 -15px;
+  padding: 10px 15px;
+  border-bottom: 1px solid #d1d8dd;
 }

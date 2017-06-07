@@ -921,21 +921,28 @@ input[type="checkbox"] {
 
 // Checkpoint Progress
 
-.checkpoint-progress {
-	position: relative;
+
+.checkpoint-progress-wrapper {
+
+	.checkpoint-progress {
+		position: relative;
+		height: 4px;
+		margin: 44px auto 20px auto;
+		width: 80%;
+	}
 
 	.cp-progress {
 		position: absolute;
 		height: 4px;
 		border-radius: 2px;
 		background-color: #fff;
-		border: 1px solid @light-border-color;
+		border: 1px solid @border-color;
 		width: 100%;
 
 		&.tracker {
 			border: none;
 			width: 0%;
-			background-color: @blue;
+			background-color: @indicator-green;
 		}
 	}
 
@@ -945,19 +952,27 @@ input[type="checkbox"] {
 		height: 10px;
 		top: -3px;
 		border-radius: 50%;
-		border: 1px solid @light-border-color;
+		border: 1px solid @border-color;
 		background-color: #fff;
 		transform: translateX(-50%);
 
 		&.filled {
 			border: none;
-			background-color: @blue;
+			background-color: @indicator-green;
 		}
 	}
 
 	.title {
 		position: absolute;
-		top: -20px;
+		top: -24px;
 		transform: translateX(-50%);
+		font-size: @text-medium;
+		white-space: nowrap;
+	}
+
+	.cp-head {
+		margin: -10px -15px 0 -15px;
+		padding: 10px 15px;
+		border-bottom: 1px solid @border-color;
 	}
 }

@@ -9,7 +9,10 @@ frappe.ui.CheckpointProgress = class CheckpointProgress {
 	make_html() {
 		const length = this.steps.length - 1;
 		this.wrapper = $(`
-			<div className="checkpoint-progress-wrapper">
+			<div class="checkpoint-progress-wrapper">
+				<div class="cp-head">
+					<span class="indicator green">Your Progress</span>
+				</div>
 				<div class="checkpoint-progress">
 					<div class="cp-progress">
 					</div>
@@ -25,7 +28,7 @@ frappe.ui.CheckpointProgress = class CheckpointProgress {
 	}
 
 	set_completed(number) {
-		this.wrapper.find('.tracker').css('width', (number * 100 / this.steps.length) + '%');
+		this.wrapper.find('.tracker').css('width', (number * 100 / (this.steps.length - 1)) + '%');
 		for(var i=1; i <= number; i++) {
 			$(this.wrapper.find('.dot').get(i)).addClass('filled');
 		}

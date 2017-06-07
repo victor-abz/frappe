@@ -66,40 +66,37 @@ $.extend(frappe.desktop, {
 
 	setup_first_run: function() {
 		var wrapper = frappe.desktop.wrapper.find('.help-message-wrapper');
-		// var $help_messages = wrapper.find('.help-messages');
+		var domain_steps = {
+			'Services': [
+				'Select Domain',
+				'Lead',
+				'Opportunity',
+				'Quotation',
+				'Sales Order',
+				'Project',
+				'Timesheet',
+				'Sales Invoice',
+				'Payment'
+			]
+		};
 
-		var steps = [
-			'Setup',
-			'Select Domain',
-			'Quotation',
-			'Sales Order',
-			'Sales Invoice'
-		];
+		frappe.db.get_value('Global Defaults', null, 'default_company', (r) => {
+			var { default_company } = r;
+			frappe.db.get_value('Company', {name: default_company}, 'domain', (r) => {
+				var { domain } = r;
+				var steps = domain_steps[domain];
+				if (!steps) return;
+				frappe.desktop.render_first_run(wrapper.find('.help-messages'), steps);
+			});
+		});
+	},
 
-		wrapper.find('.help-messages').html(`<p>Your Progress</p>`);
-
+	render_first_run: function(parent, steps) {
 		var cp = new frappe.ui.CheckpointProgress({
-			parent: wrapper.find('.help-messages'),
-			steps: steps
+			parent,
+			steps
 		});
-
-		cp.wrapper.css({
-			width: '80%',
-			margin: '0 auto'
-		});
-
-		cp.set_completed(5);
-
-		// var progress =
-		// 	`<p>
-		// 		Your progress
-		// 	</p>
-		// 	<div class="progress">
-		// 		<div class="progress-bar progress-bar-success" style="width: 20%">
-		// 		</div>
-		// 	</div>`;
-
-		// wrapper.find('.help-messages').html(progress);
+		cp.set_completed(2);
 	},
 
 	setup_help_messages: function() {
