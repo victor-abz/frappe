@@ -4,6 +4,5 @@ machine:
   node:
     version: 7.10.0
   pre:
-    - ssh -T git@github.com
     - wget https://raw.githubusercontent.com/frappe/bench/master/playbooks/install.py
     - sudo python install.py --develop
