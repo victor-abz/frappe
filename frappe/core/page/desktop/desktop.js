@@ -67,29 +67,40 @@ $.extend(frappe.desktop, {
 	setup_vertical_first_run: function() {
 		var wrapper = $('#page-desktop');
 
-		var steps = [
-			['Select Domain', ''],
-			['Customer', 'List/Customer'],
-			['Quotation', 'List/Quotation'],
-			['Sales Order', 'List/Sales Order'],
-			['Project', 'List/Project'],
-			['Sales Invoice', 'List/Sales Invoice'],
-		];
+		var domain_steps = {
+			'Services': [
+				['Select Domain', ''],
+				['Customer', 'List/Customer'],
+				['Quotation', 'List/Quotation'],
+				['Sales Order', 'List/Sales Order'],
+				['Project', 'List/Project'],
+				['Sales Invoice', 'List/Sales Invoice'],
+			]
+		};
 
-		var first_run_wrapper = wrapper.append(`
-			<div class="first-run-wrapper">
-				<div class="head">
-					<span class="indicator blue">Your Progress</span>
-				</div>
-				<div class="body">
-					<ul class="list-unstyled">
-						${steps.map(step => `<li><a href="#${step[1]}"><span class="fa fa-circle text-extra-muted"></span>${step[0]}</a></li>`).join("")}
-					</ul>
-				</div>
-			</div>
-		`);
+		var first_run_wrapper;
 
-		set_completed(2);
+		frappe.call({
+			method: 'frappe.core.page.desktop.desktop.get_selected_domain',
+			callback: (r) => {
+				var domain = r && r.message || 'Services';
+				var steps = domain_steps[domain];
+
+				first_run_wrapper = wrapper.append(`
+					<div class="first-run-wrapper">
+						<div class="head">
+							<span class="indicator blue">Your Progress</span>
+						</div>
+						<div class="body">
+							<ul class="list-unstyled">
+								${steps.map(step => `<li><a href="#${step[1]}"><span class="fa fa-circle text-extra-muted"></span>${step[0]}</a></li>`).join("")}
+							</ul>
+						</div>
+					</div>
+				`);
+				set_completed(2);
+			}
+		});
 
 		function set_completed(number) {
 			first_run_wrapper.find('li').slice(0, number).each((i, el) => {

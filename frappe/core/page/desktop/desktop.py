@@ -21,3 +21,9 @@ def get_help_messages():
 		messages += frappe.get_attr(fn)()
 
 	return sorted(messages, lambda a, b: cmp(a.get('count'), b.get('count')))
+
+@frappe.whitelist()
+def get_selected_domain():
+	default_company = frappe.db.get_value('Global Defaults', None, 'default_company')
+	domain = frappe.db.get_value('Company', default_company, 'domain')
+	return domain
