@@ -23,18 +23,19 @@ install:
   - cd ~/ && bench init frappe-bench --frappe-path $TRAVIS_BUILD_DIR
   - cp -r $TRAVIS_BUILD_DIR/test_sites/test_site ~/frappe-bench/sites/
 
-script:
-  - set -e
-  - bench --verbose run-tests
-
 before_script:
   - mysql -u root -ptravis -e 'create database test_frappe'
   - echo "USE mysql;\nCREATE USER 'test_frappe'@'localhost' IDENTIFIED BY 'test_frappe';\nFLUSH PRIVILEGES;\n" | mysql -u root -ptravis
   - echo "USE mysql;\nGRANT ALL PRIVILEGES ON \`test_frappe\`.* TO 'test_frappe'@'localhost';\n" | mysql -u root -ptravis
   
   - cd ~/frappe-bench
-  - npm install babel-core less chokidar babel-preset-es2015 babel-preset-es2016 babel-preset-es2017 babel-preset-babili
+  - npm install babel-core less chokidar testcafe testcafe-browser-provider-saucelabs babel-preset-es2015 babel-preset-es2016 babel-preset-es2017 babel-preset-babili
   - bench use test_site
   - bench reinstall --yes
   - bench start &
   - sleep 10
+
+script:
+  - set -e
+  - testcafe "saucelabs:Chrome@beta:Windows 10" apps/frappe/frappe/tests/e2e/testcafe.js
+#  - bench --verbose run-tests
