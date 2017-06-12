@@ -7,6 +7,9 @@ python:
 services:
   - mysql
 
+addons:
+  sauce_connect: true
+
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
@@ -18,6 +21,7 @@ install:
   - wget https://raw.githubusercontent.com/frappe/bench/master/playbooks/install.py
   - sudo python install.py --develop --user travis --without-bench-setup
   - sudo pip install -e ~/bench
+  - npm install -g testcafe testcafe-browser-provider-saucelabs
 
   - rm $TRAVIS_BUILD_DIR/.git/shallow
   - cd ~/ && bench init frappe-bench --frappe-path $TRAVIS_BUILD_DIR
@@ -29,7 +33,6 @@ before_script:
   - echo "USE mysql;\nGRANT ALL PRIVILEGES ON \`test_frappe\`.* TO 'test_frappe'@'localhost';\n" | mysql -u root -ptravis
   
   - cd ~/frappe-bench
-  - npm install -g testcafe testcafe-browser-provider-saucelabs
   - npm install babel-core less chokidar babel-preset-es2015 babel-preset-es2016 babel-preset-es2017 babel-preset-babili
   - bench use test_site
   - bench reinstall --yes
@@ -39,4 +42,5 @@ before_script:
 script:
   - set -e
   - testcafe chrome apps/frappe/frappe/tests/e2e/testcafe.js
+  - testcafe "sauce:Chrome" apps/frappe/frappe/tests/e2e/testcafe.js
 #  - bench --verbose run-tests
