@@ -19,6 +19,7 @@ const app_paths = apps.map(app => path_join(apps_path, app, app)) // base_path o
 const assets_path = path_join(sites_path, 'assets');
 const build_map = make_build_map();
 const file_watcher_port = get_conf().file_watcher_port;
+const ci_mode = process.env.CI;
 
 // command line args
 const action = process.argv[2] || '--build';
@@ -46,6 +47,12 @@ function build(minify) {
 let socket_connection = false;
 
 function watch() {
+
+	if(ci_mode) {
+		console.log('CI mode detected: Skipping bench watch');
+		return;
+	}
+
 	http.listen(file_watcher_port, function () {
 		console.log('file watching on *:', file_watcher_port);
 	});
