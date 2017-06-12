@@ -48,10 +48,10 @@ let socket_connection = false;
 
 function watch() {
 
-	if(ci_mode) {
-		console.log('CI mode detected: Skipping bench watch');
-		return;
-	}
+	// if(ci_mode) {
+	// 	console.log('CI mode detected: Skipping bench watch');
+	// 	return;
+	// }
 
 	http.listen(file_watcher_port, function () {
 		console.log('file watching on *:', file_watcher_port);
