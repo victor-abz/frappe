@@ -39,5 +39,5 @@ before_script:
 script:
   - set -e
   # - testcafe chrome apps/frappe/frappe/tests/e2e/testcafe.js
-  - testcafe "sauce:Chrome" apps/frappe/frappe/tests/e2e/testcafe.js
+  - testcafe "saucelabs:Chrome" apps/frappe/frappe/tests/e2e/testcafe.js
   #  - bench --verbose run-tests
