@@ -37,6 +37,6 @@ before_script:
   - sleep 10
 
 script:
-  - testcafe chrome apps/frappe/frappe/tests/testcafe/
-  # - testcafe "saucelabs:Chrome" apps/frappe/frappe/tests/testcafe/
+  # - testcafe chrome apps/frappe/frappe/tests/testcafe/
+  - testcafe "saucelabs:Chrome" apps/frappe/frappe/tests/testcafe/0_setup_wizard.js
   #  - bench --verbose run-tests
