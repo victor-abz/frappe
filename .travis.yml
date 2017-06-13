@@ -43,4 +43,6 @@ script:
   - testcafe "saucelabs:Chrome" apps/frappe/frappe/tests/testcafe/0_setup_wizard.js
 
 after_script:
-  - sudo pkill python redis && exit 0
+  - sudo pkill python
+  - sudo pkill redis
+  - exit 0
