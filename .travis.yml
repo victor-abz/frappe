@@ -4,6 +4,8 @@ dist: trusty
 python:
   - "2.7"
 
+sudo: required
+
 services:
   - mysql
 
