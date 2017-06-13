@@ -37,7 +37,6 @@ before_script:
   - sleep 10
 
 script:
-  - set -e
   - bench --verbose run-tests
   - bench reinstall --yes
   - testcafe "saucelabs:Chrome" apps/frappe/frappe/tests/testcafe/0_setup_wizard.js
