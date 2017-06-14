@@ -44,5 +44,7 @@ script:
   - testcafe chrome apps/frappe/frappe/tests/testcafe/0_setup_wizard.js
 
 after_script:
-  - sudo pkill -f bench
-  - sudo pkill testcafe
+  - killall -9 python
+  - killall -9 redis
+  - killall -9 node
+  - killall -9 testcafe
