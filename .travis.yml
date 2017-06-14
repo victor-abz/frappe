@@ -42,6 +42,7 @@ script:
   - bench --verbose run-tests
   - bench reinstall --yes
   - testcafe chrome apps/frappe/frappe/tests/testcafe/0_setup_wizard.js
+  - ps aux
 
 after_script:
   - killall -9 python
