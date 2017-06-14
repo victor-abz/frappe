@@ -49,3 +49,4 @@ after_script:
   - killall -9 redis
   - killall -9 node
   - killall -9 testcafe
+  - ps aux
