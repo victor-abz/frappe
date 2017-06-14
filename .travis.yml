@@ -45,3 +45,4 @@ script:
 
 after_script:
   - sudo pkill -f bench
+  - sudo pkill testcafe
