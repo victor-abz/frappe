@@ -39,8 +39,8 @@ before_script:
   - sleep 10
 
 script:
-  - bench --verbose run-tests
-  - bench reinstall --yes
+  # - bench --verbose run-tests
+  # - bench reinstall --yes
   - testcafe chrome apps/frappe/frappe/tests/testcafe/0_setup_wizard.js
   - ps aux
 
