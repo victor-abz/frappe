@@ -24,12 +24,6 @@ install:
   - cd ~/ && bench init frappe-bench --frappe-path $TRAVIS_BUILD_DIR
   - cp -r $TRAVIS_BUILD_DIR/test_sites/test_site ~/frappe-bench/sites/
 
-script:
-  - set -e
-  - bench --verbose run-tests
-  - bench reinstall --yes
-  - testcafe chrome apps/frappe/frappe/tests/testcafe/login.js
-
 before_script:
   - mysql -u root -ptravis -e 'create database test_frappe'
   - echo "USE mysql;\nCREATE USER 'test_frappe'@'localhost' IDENTIFIED BY 'test_frappe';\nFLUSH PRIVILEGES;\n" | mysql -u root -ptravis
@@ -41,3 +35,9 @@ before_script:
   - bench reinstall --yes
   - bench start &
   - sleep 10
+
+script:
+  - set -e
+  - bench --verbose run-tests
+  - bench reinstall --yes
+  - testcafe chrome apps/frappe/frappe/tests/testcafe/0_setup_wizard.js
