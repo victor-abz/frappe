@@ -4,8 +4,6 @@ dist: trusty
 python:
   - "2.7"
 
-sudo: required
-
 services:
   - mysql
 
@@ -18,13 +16,19 @@ install:
   - sudo apt-get purge -y mysql-common mysql-server mysql-client
   - nvm install v7.10.0
   - wget https://raw.githubusercontent.com/frappe/bench/master/playbooks/install.py
-  - travis_retry sudo python install.py --develop --user travis --without-bench-setup
+  - sudo python install.py --develop --user travis --without-bench-setup
   - sudo pip install -e ~/bench
-  - npm install -g testcafe testcafe-browser-provider-saucelabs
+  - npm install -g testcafe
 
   - rm $TRAVIS_BUILD_DIR/.git/shallow
   - cd ~/ && bench init frappe-bench --frappe-path $TRAVIS_BUILD_DIR
   - cp -r $TRAVIS_BUILD_DIR/test_sites/test_site ~/frappe-bench/sites/
+
+script:
+  - set -e
+  - bench --verbose run-tests
+  - bench reinstall --yes
+  - testcafe chrome apps/frappe/frappe/tests/testcafe/login.js
 
 before_script:
   - mysql -u root -ptravis -e 'create database test_frappe'
@@ -37,8 +41,3 @@ before_script:
   - bench reinstall --yes
   - bench start &
   - sleep 10
-
-script:
-  # - bench --verbose run-tests
-  # - bench reinstall --yes
-  - testcafe chrome apps/frappe/frappe/tests/testcafe/login.js
