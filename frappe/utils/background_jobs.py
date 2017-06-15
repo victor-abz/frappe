@@ -29,8 +29,6 @@ def enqueue(method, queue='default', timeout=300, event=None,
 		:param kwargs: keyword arguments to be passed to the method
 	'''
 
-	return
-
 	if now or frappe.flags.in_migrate:
 		return frappe.call(method, **kwargs)
 

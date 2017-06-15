@@ -41,4 +41,4 @@ before_script:
 script:
   # - bench --verbose run-tests
   # - bench reinstall --yes
-  - testcafe chrome apps/frappe/frappe/tests/testcafe/0_setup_wizard.js
+  - testcafe chrome apps/frappe/frappe/tests/testcafe/login.js
