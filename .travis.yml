@@ -42,7 +42,8 @@ before_script:
   - bench start &
   - sleep 10
 
-  - ~/sc-binary/bin/sc -u netchampfaris -k 90fad2ae-008e-43d9-a0fc-d592cb5fe141
+  - ~/sc-binary/bin/sc -u netchampfaris -k 90fad2ae-008e-43d9-a0fc-d592cb5fe141 &
+  - sleep 10
 
 script:
   # - set -e
