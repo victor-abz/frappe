@@ -19,6 +19,11 @@ install:
   - sudo python install.py --develop --user travis --without-bench-setup
   - sudo pip install -e ~/bench
 
+  - cd ~/
+  - wget https://saucelabs.com/downloads/sc-4.4.7-linux.tar.gz
+  - tar -xf sc-4.4.7-linux.tar.gz
+  - mv sc-4.4.7-linux sc-binary
+
   - rm $TRAVIS_BUILD_DIR/.git/shallow
   - cd ~/ && bench init frappe-bench --frappe-path $TRAVIS_BUILD_DIR
   - cp -r $TRAVIS_BUILD_DIR/test_sites/test_site ~/frappe-bench/sites/
@@ -37,8 +42,11 @@ before_script:
   - bench start &
   - sleep 10
 
+  - ~/sc-binary/bin/sc -u netchampfaris -k 90fad2ae-008e-43d9-a0fc-d592cb5fe141
+
 script:
   # - set -e
   # - bench --verbose run-tests
-  - ./node_modules/nightwatch/bin/nightwatch --config apps/frappe/frappe/nightwatch.js --env local --app frappe --site localhost --port 8000
+  - ./node_modules/nightwatch/bin/nightwatch --config apps/frappe/frappe/nightwatch.js --env sauce --app frappe
   - pkill node
+  - pkill sc
