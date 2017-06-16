@@ -44,3 +44,4 @@ script:
   # - set -e
   # - bench --verbose run-tests
   - ./node_modules/nightwatch/bin/nightwatch --config apps/frappe/frappe/nightwatch.js --env sauce --app frappe
+  - pkill node
