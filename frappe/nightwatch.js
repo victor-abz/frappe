@@ -3,8 +3,8 @@
 const BINPATH = './node_modules/nightwatch/bin/'; // change if required.
 // const SCREENSHOT_PATH = "./node_modules/nightwatch/screenshots/" + PKG.version + "/";
 const {
-	SAUCE_USERNAME,
-	SAUCE_ACCESS_KEY,
+	SAUCE_USERNAME='netchampfaris',
+	SAUCE_ACCESS_KEY='90fad2ae-008e-43d9-a0fc-d592cb5fe141',
 	TRAVIS_JOB_NUMBER='travis-job-number'
 } = process.env;
 const app_name = get_cli_arg('app');
