@@ -7,9 +7,6 @@ python:
 services:
   - mysql
 
-addons:
-  sauce_connect: true
-
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
@@ -43,5 +40,5 @@ before_script:
 script:
   # - set -e
   # - bench --verbose run-tests
-  - ./node_modules/nightwatch/bin/nightwatch --config apps/frappe/frappe/nightwatch.js --env sauce --app frappe
+  - ./node_modules/nightwatch/bin/nightwatch --config apps/frappe/frappe/nightwatch.js --env local --app frappe --site localhost --port 8000
   - pkill node
