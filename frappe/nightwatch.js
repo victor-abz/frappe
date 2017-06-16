@@ -33,7 +33,7 @@ const config = {
 	// "test_workers": { "enabled": true, "workers": "auto" }, // perform tests in parallel where possible
 	"test_settings": {
 		"sauce": {
-			"launch_url": "http://localhost:8000", // we're testing a Public or "staging" site on Saucelabs
+			"launch_url": "http://ondemand.saucelabs.com:80", // we're testing a Public or "staging" site on Saucelabs
 			"selenium_port": 80,
 			"selenium_host": "ondemand.saucelabs.com",
 			"silent": true,
