@@ -33,7 +33,7 @@ before_script:
   
   - cd ~/frappe-bench
   - npm install babel-core less chokidar babel-preset-es2015 babel-preset-es2016 babel-preset-es2017 babel-preset-babili nightwatch selenium-download
-  - node apps/frappe/frappe/nighwatch.js
+  - node apps/frappe/frappe/nightwatch.js
   - bench use test_site
   - bench reinstall --yes
   - bench start &
