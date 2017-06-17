@@ -6,7 +6,7 @@ const fs = require('fs');
 module.exports = {
 	'Smoke test': browser => {
 		browser
-			.url(browser.launch_url + '/login')
+			.url('http://localhost:8000/login')
 			.waitForElementVisible('body', 5000)
 			.saveScreenshot('test.jpg')
 			.assert.title('Login')
