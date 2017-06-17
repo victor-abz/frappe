@@ -4,13 +4,10 @@ const fs = require('fs');
 
 
 module.exports = {
-	beforeEach: browser => {
-		browser
-			.url(browser.launch_url + '/login')
-			.waitForElementVisible('body');
-	},
 	'Smoke test': browser => {
 		browser
+			.url(browser.launch_url + '/login')
+			.waitForElementVisible('body', 5000)
 			.assert.title('Login')
 			.saveScreenshot('test.jpg')
 			.assert.visible('#login_email', 'Check if login box is visible')
