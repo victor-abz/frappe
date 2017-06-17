@@ -12,7 +12,7 @@ module.exports = {
 			.setValue("#login_email", "Administrator")
 			.setValue("#login_password", "admin")
 			.click(".btn-login")
-			.waitForElementVisible("#page-desktop", 5000)
+			.waitForElementVisible("#page-desktop", 15000)
 			.assert.title('Desktop')
 	},
 	after: browser => {
