@@ -7,7 +7,11 @@ module.exports = {
 	'Smoke test': browser => {
 		browser
 			.assert.title('Login')
+			.saveScreenshot('test.jpg')
 			.assert.visible('#login_email', 'Check if login box is visible')
 	},
-	after: browser => browser.end(),
+	after: browser => {
+		console.log(__filename, __dirname);
+		browser.end()
+	},
 };

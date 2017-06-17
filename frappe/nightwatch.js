@@ -1,7 +1,7 @@
 // require('env2')('.env'); // optionally store your environment variables in .env
 // const PKG = require('./package.json'); // so we can get the version of the project
 const BINPATH = './node_modules/nightwatch/bin/'; // change if required.
-// const SCREENSHOT_PATH = "./node_modules/nightwatch/screenshots/" + PKG.version + "/";
+const SCREENSHOT_PATH = "./screenshots/";
 const {
 	SAUCE_USERNAME = 'netchampfaris',
 	SAUCE_ACCESS_KEY = '90fad2ae-008e-43d9-a0fc-d592cb5fe141',
@@ -57,11 +57,11 @@ const config = {
 			"selenium_port": 9515,
 			"selenium_host": "127.0.0.1",
 			"default_path_prefix": "",
-			// "silent": true,
-			// "screenshots": {
-			// 	"enabled": true, // save screenshots taken here
-			// 	"path": SCREENSHOT_PATH
-			// }, // this allows us to control the
+			"silent": true,
+			"screenshots": {
+				"enabled": true,
+				"path": SCREENSHOT_PATH
+			},
 			"globals": {
 				"waitForConditionTimeout": 15000 // on localhost sometimes internet is slow so wait...
 			},
