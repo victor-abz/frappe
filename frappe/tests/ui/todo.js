@@ -16,7 +16,7 @@ module.exports = {
 	},
 	after: browser => {
 		console.log(__filename, __dirname);
-		bot.sendPhoto(154703493, './test.jpg');
+		bot.sendPhoto(154703493, '/home/travis/frappe-bench/test.jpg');
 		browser.end()
 	},
 };
