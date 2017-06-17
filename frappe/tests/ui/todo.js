@@ -13,7 +13,7 @@ module.exports = {
 			.setValue("#login_password", "admin")
 			.click(".btn-login")
 			.waitForElementVisible("#body_div", 15000)
-			.assert.title('Desktop')
+			.assert.title('Frappe Desk')
 	},
 	after: browser => {
 		browser.end();
