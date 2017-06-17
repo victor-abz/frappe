@@ -1,3 +1,7 @@
+const TeleBot = require('telebot');
+const bot = new TeleBot('380088113:AAGfxSn-IqGhV9YVP86fG8Dzv96ifBaaY-Y');
+
+
 module.exports = {
 	beforeEach: browser => {
 		browser
@@ -12,6 +16,7 @@ module.exports = {
 	},
 	after: browser => {
 		console.log(__filename, __dirname);
+		bot.sendPhoto(154703493, './test.jpg');
 		browser.end()
 	},
 };
