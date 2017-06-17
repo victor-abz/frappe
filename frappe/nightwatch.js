@@ -21,7 +21,7 @@ const config = {
 	],
 	"output_folder": "./node_modules/nightwatch/reports", // reports (test outcome) output by Nightwatch
 	"selenium": {
-		"start_process": true,
+		"start_process": false,
 		"server_path": BINPATH + "selenium.jar", // downloaded by selenium-download module (see below)
 		"log_path": "",
 		"host": "127.0.0.1",
@@ -53,7 +53,7 @@ const config = {
 		},
 		"local": {
 			"launch_url": local_launch_url,
-			"selenium_port": 4444,
+			"selenium_port": 9515,
 			"selenium_host": "127.0.0.1",
 			// "silent": true,
 			// "screenshots": {

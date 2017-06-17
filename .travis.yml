@@ -47,6 +47,6 @@ before_script:
 script:
   # - set -e
   # - bench --verbose run-tests
-  - ./node_modules/nightwatch/bin/nightwatch --config apps/frappe/frappe/nightwatch.js --env sauce --app frappe
-  - pkill node
-  - pkill sc
+  - ./node_modules/nightwatch/bin/chromedriver --port=9515 --url-base=/wd/hub &
+  - while ! curl localhost:9515; do echo -n .; sleep 1; done
+  - ./node_modules/nightwatch/bin/nightwatch --config apps/frappe/frappe/nightwatch.js --env local --app frappe
