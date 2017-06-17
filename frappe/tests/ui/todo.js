@@ -8,8 +8,8 @@ module.exports = {
 		browser
 			.url(browser.launch_url + '/login')
 			.waitForElementVisible('body', 5000)
-			.assert.title('Login')
 			.saveScreenshot('test.jpg')
+			.assert.title('Login')
 			.assert.visible('#login_email', 'Check if login box is visible')
 	},
 	after: browser => {
