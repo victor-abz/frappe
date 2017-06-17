@@ -20,7 +20,7 @@ const config = {
 		`apps/${app_name}/${app_name}/tests/ui`
 	],
 	"output_folder": "./node_modules/nightwatch/reports", // reports (test outcome) output by Nightwatch
-	"globals_path" : "./nightwatch.global.js",
+	"globals_path" : 'apps/frappe/frappe/nightwatch.global.js',
 	"selenium": {
 		"start_process": false,
 		"server_path": BINPATH + "selenium.jar", // downloaded by selenium-download module (see below)
