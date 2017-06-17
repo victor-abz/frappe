@@ -72,7 +72,8 @@ const config = {
 					"prefs": {
 						"credentials_enable_service": false
 					},
-					"excludeSwitches": ["enable-automation"]
+					"excludeSwitches": ["enable-automation"],
+					"binary": "/usr/bin/google-chrome-stable"
 				},
 				"javascriptEnabled": true,
 				"acceptSslCerts": true
