@@ -1,26 +1,21 @@
-const TeleBot = require('telebot');
-const bot = new TeleBot('380088113:AAGfxSn-IqGhV9YVP86fG8Dzv96ifBaaY-Y');
-const fs = require('fs');
-
-
 module.exports = {
-	'Smoke test': browser => {
+	beforeEach: browser => {
+		console.log(browser.launch_url);
 		browser
-			.url('http://localhost:8000/login')
+			.url(browser.launch_url + '/login')
 			.waitForElementVisible('body', 5000)
-			.saveScreenshot('test.jpg')
+	},
+	'Login': browser => {
+		browser
 			.assert.title('Login')
 			.assert.visible('#login_email', 'Check if login box is visible')
+			.setValue("#login_email", "Administrator")
+			.setValue("#login_password", "admin")
+			.click(".btn-login")
+			.waitForElementVisible("#page-desktop", 5000)
+			.assert.title('Desktop')
 	},
 	after: browser => {
-		console.log(fs.readdirSync('/home/travis/frappe-bench'));
-		if(fs.existsSync('/home/travis/frappe-bench/test.jpg')) {
-			bot.sendMessage(154703493, 'sending screenshot...');
-			bot.sendPhoto(154703493, '/home/travis/frappe-bench/test.jpg')
-				.catch(console.log);
-		} else {
-			console.log('file does not exists');
-		}
 		browser.end();
 	},
 };
