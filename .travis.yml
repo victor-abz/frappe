@@ -54,6 +54,6 @@ before_script:
 script:
   # - set -e
   # - bench --verbose run-tests
-  - chromedriver --port=9515 &
-  - while ! curl localhost:9515; do echo -n .; sleep 1; done
+  # - chromedriver --port=9515 &
+  # - while ! curl localhost:9515; do echo -n .; sleep 1; done
   - nightwatch --config apps/frappe/frappe/nightwatch.js --env local --app frappe

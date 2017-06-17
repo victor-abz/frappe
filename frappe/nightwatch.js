@@ -3,14 +3,14 @@
 const BINPATH = './node_modules/nightwatch/bin/'; // change if required.
 // const SCREENSHOT_PATH = "./node_modules/nightwatch/screenshots/" + PKG.version + "/";
 const {
-	SAUCE_USERNAME='netchampfaris',
-	SAUCE_ACCESS_KEY='90fad2ae-008e-43d9-a0fc-d592cb5fe141',
-	TRAVIS_JOB_NUMBER='travis-job-number'
+	SAUCE_USERNAME = 'netchampfaris',
+	SAUCE_ACCESS_KEY = '90fad2ae-008e-43d9-a0fc-d592cb5fe141',
+	TRAVIS_JOB_NUMBER = 'travis-job-number'
 } = process.env;
 const app_name = get_cli_arg('app');
 
 let local_launch_url = 'http://localhost:8000';
-if(get_cli_arg('site')) {
+if (get_cli_arg('site')) {
 	local_launch_url = 'http://' + get_cli_arg('site') + ':' + get_cli_arg('port');
 }
 
@@ -67,66 +67,14 @@ const config = {
 			"desiredCapabilities": {
 				"browserName": "chrome",
 				"chromeOptions": {
-					"args": [
-						"--no-sandbox",
-						"start-fullscreen",
-						"window-size=1280,800"
-					]
+					"args": ["--no-sandbox", "--start-maximized"],
+					"prefs": {
+						"credentials_enable_service": false
+					},
+					"excludeSwitches": ["enable-automation"]
 				},
 				"javascriptEnabled": true,
 				"acceptSslCerts": true
-			}
-		},
-		"chrome": { // your local Chrome browser (chromedriver)
-			"desiredCapabilities": {
-				"browserName": "chrome",
-				"javascriptEnabled": true,
-				"acceptSslCerts": true
-			}
-		},
-		"chromemac": { // browsers used on saucelabs:
-			"desiredCapabilities": {
-				"browserName": "chrome",
-				"platform": "OS X 10.11",
-				"version": "48"
-			}
-		},
-		"ie11": {
-			"desiredCapabilities": {
-				"browserName": "internet explorer",
-				"platform": "Windows 10",
-				"version": "11.0"
-			}
-		},
-		"firefox": {
-			"desiredCapabilities": {
-				"platform": "XP",
-				"browserName": "firefox",
-				"version": "33"
-			}
-		},
-		"internet_explorer_10": {
-			"desiredCapabilities": {
-				"platform": "Windows 7",
-				"browserName": "internet explorer",
-				"version": "10"
-			}
-		},
-		"android_s4_emulator": {
-			"desiredCapabilities": {
-				"browserName": "android",
-				"deviceOrientation": "portrait",
-				"deviceName": "Samsung Galaxy S4 Emulator",
-				"version": "4.4"
-			}
-		},
-		"iphone_6_simulator": {
-			"desiredCapabilities": {
-				"browserName": "iPhone",
-				"deviceOrientation": "portrait",
-				"deviceName": "iPhone 6",
-				"platform": "OSX 10.10",
-				"version": "8.4"
 			}
 		}
 	}
@@ -150,7 +98,7 @@ module.exports = config;
 function get_cli_arg(key) {
 	var args = process.argv;
 	var i = args.indexOf('--' + key);
-	return args[i+1];
+	return args[i + 1];
 }
 
 // function padLeft(count) { // theregister.co.uk/2016/03/23/npm_left_pad_chaos/
