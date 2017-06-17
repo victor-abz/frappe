@@ -19,12 +19,12 @@ install:
   - sudo python install.py --develop --user travis --without-bench-setup
   - sudo pip install -e ~/bench
 
-  - cd ~/
-  - wget https://saucelabs.com/downloads/sc-4.4.7-linux.tar.gz
-  - tar -xf sc-4.4.7-linux.tar.gz
-  - mv sc-4.4.7-linux sc-binary
-  - ~/sc-binary/bin/sc -u netchampfaris -k 90fad2ae-008e-43d9-a0fc-d592cb5fe141 &
-  - sleep 20
+  # - cd ~/
+  # - wget https://saucelabs.com/downloads/sc-4.4.7-linux.tar.gz
+  # - tar -xf sc-4.4.7-linux.tar.gz
+  # - mv sc-4.4.7-linux sc-binary
+  # - ~/sc-binary/bin/sc -u netchampfaris -k 90fad2ae-008e-43d9-a0fc-d592cb5fe141 &
+  # - sleep 20
 
   - rm $TRAVIS_BUILD_DIR/.git/shallow
   - cd ~/ && bench init frappe-bench --frappe-path $TRAVIS_BUILD_DIR
@@ -36,9 +36,9 @@ before_script:
   - echo "USE mysql;\nGRANT ALL PRIVILEGES ON \`test_frappe\`.* TO 'test_frappe'@'localhost';\n" | mysql -u root -ptravis
   
   - cd ~/frappe-bench
-  - npm install babel-core less chokidar babel-preset-es2015 babel-preset-es2016 babel-preset-es2017 babel-preset-babili nightwatch selenium-download
-  - npm install -g nightwatch
-  - node apps/frappe/frappe/nightwatch.js
+  - npm install babel-core less chokidar babel-preset-es2015 babel-preset-es2016 babel-preset-es2017 babel-preset-babili
+  - npm install -g nightwatch chromedriver
+  # - node apps/frappe/frappe/nightwatch.js
   - bench use test_site
   - bench reinstall --yes
   - bench start &
@@ -47,6 +47,6 @@ before_script:
 script:
   # - set -e
   # - bench --verbose run-tests
-  - ./node_modules/nightwatch/bin/chromedriver --port=9515 --url-base=/wd/hub &
+  - chromedriver --port=9515 &
   - while ! curl localhost:9515; do echo -n .; sleep 1; done
-  - ./node_modules/nightwatch/bin/nightwatch --config apps/frappe/frappe/nightwatch.js --env local --app frappe
+  - nightwatch --config apps/frappe/frappe/nightwatch.js --env local --app frappe
