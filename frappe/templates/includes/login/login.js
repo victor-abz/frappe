@@ -160,6 +160,8 @@ login.login_handlers = (function() {
 					localStorage.removeItem("last_visited");
 				}
 
+
+
 				if(data.redirect_to) {
 					window.location.href = data.redirect_to;
 				}
