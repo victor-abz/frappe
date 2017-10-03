@@ -10,12 +10,15 @@ frappe.dom = {
 	by_id: function(id) {
 		return document.getElementById(id);
 	},
+	get_unique_id: function() {
+		return 'unique-' + frappe.dom.id_count;
+	},
 	set_unique_id: function(ele) {
 		var $ele = $(ele);
 		if($ele.attr('id')) {
 			return $ele.attr('id');
 		}
-		var id = 'unique-' + frappe.dom.id_count;
+		var id = frappe.dom.get_unique_id();
 		$ele.attr('id', id);
 		frappe.dom.id_count++;
 		return id;

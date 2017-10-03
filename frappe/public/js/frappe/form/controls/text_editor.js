@@ -1,4 +1,30 @@
-frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlCode.extend({
+frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlText.extend({
+	html_element: "input",
+	input_type: "hidden",
+	make_input: function() {
+		this._super();
+		const id = frappe.dom.set_unique_id(this.$input.get(0));
+		this.$trix_editor = $(`<trix-editor input="${id}"></trix-editor>`);
+		this.$trix_editor.appendTo(this.input_area);
+		this.$trix_editor.on('trix-initialize', (e) => {
+			this.trix_editor = this.$trix_editor[0].editor;
+			console.log('editor init');
+		})
+	},
+	get_trix_editor: function() {
+		return this.trix_editor;
+	},
+	set_formatted_input: function(value) {
+		console.log('setting input');
+		this.trix_editor && this.trix_editor.insertHTML(value);
+	},
+	parse: function(value) {
+		if(value == null) value = "";
+		return frappe.dom.remove_script_and_style(value);
+	}
+});
+
+frappe.ui.form.ControlTextEditor2 = frappe.ui.form.ControlCode.extend({
 	make_input: function() {
 		this.has_input = true;
 		this.make_editor();
