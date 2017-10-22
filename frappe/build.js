@@ -31,8 +31,20 @@ if (['--build', '--watch'].indexOf(action) === -1) {
 }
 
 if (action === '--build') {
-	const minify = process.argv[3] === '--minify' ? true : false;
-	build(minify);
+	const { argv } = process;
+	const minify = argv.includes('--minify');
+
+	if (minify) {
+		argv.splice(argv.indexOf('--minify'), 1);
+	}
+
+	const last_arg = argv[argv.length - 1];
+
+	if (last_arg === '--build') {
+		build(minify);
+	} else {
+		build_single(last_arg, minify);
+	}
 }
 
 if (action === '--watch') {
@@ -41,9 +53,19 @@ if (action === '--watch') {
 
 function build(minify) {
 	for (const output_path in build_map) {
-		pack(output_path, build_map[output_path], minify);
+		build_single(output_path, minify);
 	}
 	touch(path_join(sites_path, '.build'), {force:true});
+}
+
+function build_single(output_path, minify) {
+	const inputs = build_map[output_path];
+
+	if (!inputs) {
+		throw new Error('Invalid file: ' + output_path);
+	}
+
+	pack(output_path, inputs, minify);
 }
 
 let socket_connection = false;
