@@ -17,8 +17,24 @@ $(document).ready(function() {
 			message: __('Some of the features might not work in your browser. Please update your browser to the latest version.')
 		});
 	}
+	frappe.register_service_worker();
 	frappe.start_app();
 });
+
+frappe.register_service_worker = function () {
+	if ('serviceWorker' in navigator) {
+		window.addEventListener('load', () => {
+			navigator.serviceWorker.register('/assets/service_worker.js')
+				.then(function (reg) {
+					// registration worked
+					console.log('Registration succeeded. Scope is ' + reg.scope);
+				}).catch(function (error) {
+					// registration failed
+					console.log('Registration failed with ' + error);
+				});
+		})
+	}
+}
 
 frappe.Application = Class.extend({
 	init: function() {
