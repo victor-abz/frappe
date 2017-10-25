@@ -715,3 +715,10 @@ select.form-control {
 body[data-route^="Form/Communication"] textarea[data-fieldname="subject"] {
   height: 80px !important;
 }
+trix-editor {
+  height: 400px;
+  overflow: auto;
+}
+trix-toolbar .trix-button-row {
+  justify-content: start;
+}
