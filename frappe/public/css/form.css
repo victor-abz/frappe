@@ -722,3 +722,6 @@ trix-editor {
 trix-toolbar .trix-button-row {
   justify-content: start;
 }
+trix-editor progress {
+  display: none;
+}

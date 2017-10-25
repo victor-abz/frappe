@@ -1,30 +1,36 @@
-frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlCode.extend({
-	html_element: "input",
-	input_type: "hidden",
+frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlText.extend({
+	html_element: "trix-editor",
+	input_type: null,
 	make_input: function() {
 		this._super();
-		const id = frappe.dom.set_unique_id(this.$input.get(0));
-		this.$trix_editor = $(`<trix-editor input="${id}"></trix-editor>`);
-		this.$trix_editor.appendTo(this.input_area);
-		this.init_promise();
+		this.bind_trix_events();
+		this.$input.addClass('trix-content');
 	},
-	init_promise: function() {
+	bind_change_event: function() {
+		var me = this;
+		this.$input && this.$input.on("trix-change", this.change || function(e) {
+			me.parse_validate_and_set_in_model(me.get_input_value(), e);
+		});
+	},
+	get_input_value: function() {
+		return this.$hidden_input ? this.$hidden_input.val() : undefined;
+	},
+	bind_trix_events: function() {
 		this.trix_initialized = new Promise(resolve => {
-			this.$trix_editor.on('trix-initialize', (e) => {
-				this.trix_editor = this.$trix_editor[0].editor;
+			this.$input.on('trix-initialize', (e) => {
+				this.trix_editor = this.input.editor;
+				this.$hidden_input = $(this.input.inputElement);
 				resolve();
 			});
 		});
 	},
 	set_formatted_input: function(value) {
-		console.log(value);
 		if (!value) value = '';
 
-		this.trix_initialized
-		.then(() => {
-				console.log('setting input');
-				this.trix_editor.insertHTML(value)
-			});
+		this.trix_initialized.then(() => {
+			if (value === this.last_value && this.$hidden_input.val() === value) return;
+			this.trix_editor.loadHTML(value)
+		});
 	},
 	parse: function(value) {
 		if(value == null) value = "";
