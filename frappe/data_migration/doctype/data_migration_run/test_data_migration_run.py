@@ -103,11 +103,14 @@ def create_plan():
 		]
 	}).insert()
 
+
+	hostname = 'http://localhost:8000' if os.environ.get('CI') else frappe.utils.get_url()
+
 	frappe.get_doc({
 		'doctype': 'Data Migration Connector',
 		'connector_name': 'Local Connector',
 		'connector_type': 'Frappe',
-		'hostname': 'http://localhost:8000',
+		'hostname': hostname,
 		'username': 'Administrator',
 		'password': 'admin'
 	}).insert()
