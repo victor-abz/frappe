@@ -1,6 +1,6 @@
 // common file between desk and website
 
-frappe.avatar = function(user, css_class, title) {
+frappe.avatar = function(user, css_class, title, with_link=false) {
 	if(user) {
 		// desk
 		var user_info = frappe.user_info(user);
@@ -22,12 +22,14 @@ frappe.avatar = function(user, css_class, title) {
 		css_class = "avatar-small";
 	}
 
+	let html;
+
 	if(user_info.image) {
 
 		var image = (window.cordova && user_info.image.indexOf('http')===-1) ?
 			frappe.base_url + user_info.image : user_info.image;
 
-		return `<span class="avatar ${css_class}" title="${title}">
+		html = `<span class="avatar ${css_class}" title="${title}">
 				<span class="avatar-frame" style='background-image: url("${image}")'
 					title="${title}"></span>
 			</span>`;
@@ -36,11 +38,22 @@ frappe.avatar = function(user, css_class, title) {
 		if(css_class==='avatar-small' || css_class=='avatar-xs') {
 			abbr = abbr.substr(0, 1);
 		}
-		return `<span class="avatar ${css_class}" title="${title}">
+		html = `<span class="avatar ${css_class}" title="${title}">
 			<div class="standard-image" style="background-color: ${user_info.color};">
 				${abbr}</div>
-		</span>`
+		</span>`;
 	}
+
+	if (with_link) {
+		html = `
+			<a style="display: inline-block;" href="#Form/User/${user}">
+				${html}
+				<span>${user_info.fullname}</span>
+			</a>
+		`;
+	}
+
+	return html;
 }
 
 frappe.ui.scroll = function(element, animate, additional_offset) {
