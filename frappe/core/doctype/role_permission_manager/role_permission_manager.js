@@ -3,10 +3,11 @@
 
 frappe.ui.form.on('Role Permission Manager', {
 	onload(frm) {
+		frm.events.show_help_message(frm);
 		// permission engine wrapper
 		const { $wrapper  } = frm.get_field('permission_engine_wrapper');
 		$wrapper.append("<div class='perm-engine'></div>");
-		frm.permission_engine = new frappe.PermissionEngine($wrapper);
+		frm.permission_engine = new frappe.PermissionEngine($wrapper, frm);
 
 		// help html
 		const help_html = frappe.render_template(frappe.PermissionEngine.HelpHTML, {});
@@ -35,12 +36,6 @@ frappe.ui.form.on('Role Permission Manager', {
 	},
 
 	refresh(frm) {
-		frm.page.clear_indicator();
-
-		if (!frm.doc.document_type || !frm.doc.role) {
-			frm.dashboard.add_comment(__('Select Document Type or Role to start'));
-		}
-
 		// set from route_options
 		if (frappe.route_options) {
 			if (frappe.route_options.doctype) {
@@ -51,30 +46,65 @@ frappe.ui.form.on('Role Permission Manager', {
 			}
 			frappe.route_options = null;
 		}
+
+		frm.events.on_perm_dirty(frm);
 	},
 
 	document_type(frm) {
+		frm.events.show_help_message(frm);
 		frm.permission_engine.set_document_type(frm.doc.document_type);
 	},
 
 	role(frm) {
+		frm.events.show_help_message(frm);
 		frm.permission_engine.set_role(frm.doc.role);
+	},
+
+	show_help_message(frm) {
+		if (frm.doc.document_type || frm.doc.role) {
+			frm.dashboard.clear_headline();
+		} else {
+			frm.dashboard.add_comment(__('Select Document Type or Role to start'), null, true);
+		}
+	},
+
+	on_perm_dirty(frm) {
+		if (frm.permission_engine.dirty === true) {
+			frm.page.set_indicator(__('Not Saved'), 'orange');
+			frm.page.set_primary_action(__('Save'), () => {
+				frm.permission_engine.save_changes();
+			});
+		} else {
+			frm.page.clear_indicator();
+			frm.page.clear_primary_action();
+		}
 	}
 
 });
 
 
 frappe.PermissionEngine = class PermissionEngine {
-	constructor(wrapper) {
+	constructor(wrapper, frm) {
 		this.wrapper = wrapper;
+		this.frm = frm;
 		this.page = wrapper.page;
 		this.body = $(this.wrapper).find(".perm-engine");
 		this.rights = ["read", "write", "create", "delete", "submit", "cancel", "amend",
 			"print", "email", "report", "import", "export", "set_user_permissions", "share"];
 
+		this.changes = [];
 		this.make_reset_button();
 		this.refresh();
 		this.add_check_events();
+	}
+
+	get dirty() {
+		return this._dirty;
+	}
+
+	set dirty(val) {
+		this._dirty = val;
+		this.frm.events.on_perm_dirty(this.frm);
 	}
 
 	set_document_type(document_type) {
@@ -289,35 +319,121 @@ frappe.PermissionEngine = class PermissionEngine {
 
 		d.help = "";
 
-		const $button = $('<button class="btn btn-default">Apply User Permissions</button>').click(() => {
-			const d = new frappe.ui.Dialog({
-				title: 'Apply User based Permissions',
+		// this.setup_apply_user_permissions_dialog(d, role_cell);
+	}
+
+	setup_apply_user_permissions_dialog(d, parent) {
+		console.log(d);
+
+		// let user_permissions = [];
+
+		// const dialog = new frappe.ui.Dialog({
+		// 	title: __('Apply User Permissions'),
+		// 	// size: 'large',
+		// 	fields: [
+		// 		{
+		// 			label: __('Enable User based Role Permissions'),
+		// 			fieldname: 'enable',
+		// 			fieldtype: 'Check',
+		// 			default: d.apply_user_permissions
+		// 		},
+		// 		{
+		// 			label: __('Restrict Permissions for Link Fields'),
+		// 			fieldtype: 'Section Break',
+		// 			depends_on: 'enable'
+		// 		},
+		// 		{
+		// 			fieldname: 'user_permissions', fieldtype: 'Table',
+		// 			fields: [
+		// 				{
+		// 					label: __('Allow'),
+		// 					fieldname: 'allow',
+		// 					fieldtype: 'Link',
+		// 					options: 'DocType',
+		// 					in_list_view: 1,
+		// 					get_query() {
+		// 						return {
+		// 							filters: {
+		// 								name: ['in', d.linked_doctypes]
+		// 							}
+		// 						};
+		// 					}
+		// 				},
+		// 				{
+		// 					label: __('Value'),
+		// 					fieldname: 'for_value',
+		// 					fieldtype: 'Dynamic Link',
+		// 					options: 'allow',
+		// 					in_list_view: 1
+		// 				},
+		// 				{
+		// 					label: __('For User'),
+		// 					fieldname: 'user',
+		// 					fieldtype: 'Link',
+		// 					options: 'User',
+		// 					in_list_view: 1
+		// 				}
+		// 			],
+		// 			in_place_edit: true,
+		// 			data: user_permissions,
+		// 			get_data() {
+		// 				return user_permissions;
+		// 			}
+		// 		}
+		// 	]
+		// });
+
+		// const $button = $(`<button class="btn btn-default">${__('Apply User Permissions')}</button>`).click(() => {
+		// 	frappe.db.get_list('User Permission', {
+		// 		filters: [{ allow: ['in', d.linked_doctypes] }],
+		// 		fields: ['name', 'allow', 'for_value', 'user']
+		// 	}).then(results => {
+		// 		user_permissions.push(...results);
+		// 		// Array.prototype.apply.call(user_permissions, results);
+		// 		// user_permissions = results;
+		// 		dialog.fields_dict.user_permissions.refresh();
+		// 		dialog.show();
+		// 	});
+		// });
+
+		const $button = $(`<button class="btn btn-default">${__('New User Permission')}</button>`).click(() => {
+			// frappe.new_doc('User Permission');
+
+			const dialog = new frappe.ui.Dialog({
+				title: __('New User Permission'),
 				fields: [
 					{
-						label: 'For Field',
-						fieldname: 'restrict_doctype',
+						label: __('Allow'),
+						fieldname: 'allow',
 						fieldtype: 'Link',
-						options: 'DocType'
+						options: 'DocType',
+						get_query() {
+							return {
+								filters: {
+									name: ['in', d.linked_doctypes]
+								}
+							};
+						}
 					},
 					{
-						label: 'If Value is',
-						fieldname: 'restrict_value',
+						label: __('Value'),
+						fieldname: 'for_value',
 						fieldtype: 'Dynamic Link',
-						options: 'restrict_doctype'
+						options: 'allow'
 					},
 					{
-						label: 'Restrict For User',
-						fieldname: 'for_user',
+						label: __('For User'),
+						fieldname: 'user',
 						fieldtype: 'Link',
 						options: 'User'
 					}
 				]
 			});
 
-			d.show();
+			dialog.show();
 		});
 
-		$(role_cell).append($button);
+		$(parent).append($button);
 	}
 
 	setup_if_owner(d, role_cell) {
@@ -398,20 +514,60 @@ frappe.PermissionEngine = class PermissionEngine {
 				ptype: chk.attr("data-ptype"),
 				value: chk.prop("checked") ? 1 : 0
 			};
-			return frappe.call({
-				module: "frappe.core",
-				page: "permission_manager",
-				method: "update",
-				args: args,
-				callback: function(r) {
-					if(r.exc) {
-						// exception: reverse
-						chk.prop("checked", !chk.prop("checked"));
-					} else {
-						me.get_perm(args.role)[args.ptype]=args.value;
-					}
-				}
+			me.dirty = true;
+			me.add_to_changes(args);
+			// return frappe.call({
+			// 	module: "frappe.core",
+			// 	page: "permission_manager",
+			// 	method: "update",
+			// 	args: args,
+			// 	callback: function(r) {
+			// 		if(r.exc) {
+			// 			// exception: reverse
+			// 			chk.prop("checked", !chk.prop("checked"));
+			// 		} else {
+			// 			me.get_perm(args.role)[args.ptype]=args.value;
+			// 		}
+			// 	}
+			// });
+		});
+	}
+
+	add_to_changes({doctype, role, permlevel, ptype, value}) {
+		let index = this.changes.findIndex(
+			d => d.role === role && d.permlevel === permlevel && d.doctype && doctype
+		);
+
+		if (index === -1) {
+			const length = this.changes.push({
+				doctype,
+				role,
+				permlevel
 			});
+
+			index = length - 1;
+		}
+
+		this.changes[index][ptype] = value;
+	}
+
+	save_changes() {
+
+		return frappe.call({
+			module: "frappe.core",
+			doctype: "role_permission_manager",
+			method: "update_permission_properties",
+			args: { values: this.changes },
+			freeze: true,
+			callback: function(r) {
+				console.log(r);
+				// if(r.exc) {
+				// 	// exception: reverse
+				// 	chk.prop("checked", !chk.prop("checked"));
+				// } else {
+				// 	me.get_perm(args.role)[args.ptype]=args.value;
+				// }
+			}
 		});
 	}
 
@@ -563,7 +719,7 @@ frappe.PermissionEngine = class PermissionEngine {
 
 
 	get_perm(role) {
-		return $.map(this.perm_list, function(d) { if(d.role==role) return d; })[0];
+		return this.perm_list.find(d => d.role === role);
 	}
 
 	get_link_fields(doctype) {

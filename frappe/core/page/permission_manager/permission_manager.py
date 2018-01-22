@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
+import json
 from frappe import _
 import frappe.defaults
 from frappe.modules.import_file import get_file_path, read_doc_from_file

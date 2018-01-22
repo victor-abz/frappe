@@ -33,6 +33,8 @@ frappe.call = function(opts) {
 	// cmd
 	if(opts.module && opts.page) {
 		args.cmd = opts.module+'.page.'+opts.page+'.'+opts.page+'.'+opts.method;
+	} else if(opts.module && opts.doctype) {
+		args.cmd = opts.module+'.doctype.'+opts.doctype+'.'+opts.doctype+'.'+opts.method;
 	} else if(opts.doc) {
 		$.extend(args, {
 			cmd: "runserverobj",

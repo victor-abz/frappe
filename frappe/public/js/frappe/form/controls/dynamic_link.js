@@ -3,9 +3,15 @@ frappe.ui.form.ControlDynamicLink = frappe.ui.form.ControlLink.extend({
 		if(this.df.get_options) {
 			return this.df.get_options();
 		}
-		if (this.docname==null && cur_dialog) {
+		if (cur_dialog) {
 			//for dialog box
-			return cur_dialog.get_value(this.df.options);
+			if (this.docname==null) {
+				return cur_dialog.get_value(this.df.options);
+			}
+			// grid in dialog
+			if (this.grid) {
+				return this.doc[this.df.options];
+			}
 		}
 		if (!cur_frm) {
 			const selector = `input[data-fieldname="${this.df.options}"]`;
@@ -21,6 +27,7 @@ frappe.ui.form.ControlDynamicLink = frappe.ui.form.ControlLink.extend({
 				return input.val();
 			}
 		}
+
 		var options = frappe.model.get_value(this.df.parent, this.docname, this.df.options);
 		// if(!options) {
 		// 	frappe.msgprint(__("Please set {0} first",

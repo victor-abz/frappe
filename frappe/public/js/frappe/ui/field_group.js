@@ -25,6 +25,7 @@ frappe.ui.FieldGroup = frappe.ui.form.Layout.extend({
 			$.each(this.fields_list, function(i, field) {
 				if(field.df["default"]) {
 					field.set_input(field.df["default"]);
+					me.refresh_dependency();
 				}
 			})
 
