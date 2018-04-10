@@ -4,6 +4,12 @@ const chalk = require('chalk');
 const rollup = require('rollup');
 const log = console.log; // eslint-disable-line
 
+const current_cpu = parseInt(process.argv[2] || -1);
+const total_cpus = parseInt(process.argv[3] || -1);
+const parallel_execution = current_cpu != -1;
+
+// console.log(current_cpu, total_cpus);
+
 const {
 	get_build_json,
 	get_app_path,
@@ -17,10 +23,41 @@ const {
 	get_options_for
 } = require('./config');
 
-show_production_message();
-ensure_js_css_dirs();
-build_libs();
-build_assets_for_all_apps();
+if (!parallel_execution || current_cpu === 0) {
+	show_production_message();
+	ensure_js_css_dirs();
+	build_libs();
+}
+
+if (parallel_execution) {
+	run_in_parallel();
+} else {
+	build_assets_for_all_apps();
+}
+
+function run_in_parallel() {
+	const options = get_all_options();
+	const part_length = Math.ceil(options.length / total_cpus);
+	const start = part_length * current_cpu;
+	const end = part_length * (current_cpu + 1);
+
+	const part_options = options.slice(start, end);
+
+	const promises = part_options.map(({ inputOptions, outputOptions, output_file }) => {
+		return build(inputOptions, outputOptions)
+			.then(() => {
+				log(`${chalk.green('✔')} Built ${output_file}`);
+			});
+	});
+
+	return Promise.all(promises);
+}
+
+function get_all_options() {
+	return apps_list
+		.map(app => get_options_for(app))
+		.reduce((options, curr) => options.concat(curr), [])
+}
 
 function build_assets_for_all_apps() {
 	run_serially(

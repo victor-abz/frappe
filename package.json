@@ -2,6 +2,7 @@
   "name": "frappe",
   "scripts": {
     "build": "node rollup/build.js",
+    "build_parallel": "node rollup/build_parallel.js",
     "production": "FRAPPE_ENV=production node rollup/build.js",
     "watch": "node rollup/watch.js"
   },
