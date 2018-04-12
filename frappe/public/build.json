@@ -77,6 +77,7 @@
 		"public/js/lib/datepicker/datepicker.min.css",
 		"public/js/lib/awesomplete/awesomplete.css",
 		"public/js/lib/summernote/summernote.css",
+		"node_modules/trumbowyg/dist/ui/trumbowyg.css",
 		"public/js/lib/leaflet/leaflet.css",
 		"public/js/lib/leaflet/leaflet.draw.css",
 		"public/js/lib/leaflet/L.Control.Locate.css",

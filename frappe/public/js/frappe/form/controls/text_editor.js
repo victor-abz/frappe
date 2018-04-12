@@ -1,4 +1,43 @@
+import 'trumbowyg';
+
 frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlCode.extend({
+	make_input() {
+		this._super();
+		this.$textarea = $(this.input_area).find("textarea")
+		this.$textarea.trumbowyg({
+			svgPath: '/assets/frappe/images/trumbowyg/icons.svg'
+		});
+
+		this.bind_change_event();
+
+		this.trumbowyg = this.$textarea.trumbowyg.bind(this.$textarea);
+	},
+
+	bind_change_event: function() {
+		const on_change = e => {
+			this.parse_validate_and_set_in_model(this.get_input_value(), e);
+		}
+
+		this.$textarea && this.$textarea.on('tbwchange', frappe.utils.debounce(on_change, 300));
+	},
+
+	get_input_value: function() {
+		return this.trumbowyg ? this.trumbowyg('html'): '';
+	},
+
+	parse: function(value) {
+		if(value == null) value = "";
+		return frappe.dom.remove_script_and_style(value);
+	},
+
+	set_formatted_input: function(value) {
+		if(value !== this.get_input_value()) {
+			this.trumbowyg('html', value);
+		}
+	}
+})
+
+frappe.ui.form.ControlTextEditorOld = frappe.ui.form.ControlCode.extend({
 	make_input: function() {
 		this.has_input = true;
 		this.make_editor();
