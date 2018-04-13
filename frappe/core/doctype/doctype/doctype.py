@@ -85,7 +85,7 @@ class DocType(Document):
 		if not [d.fieldname for d in self.fields if d.in_list_view]:
 			cnt = 0
 			for d in self.fields:
-				if d.reqd and not d.hidden and not d.fieldtype == "Table":
+				if d.reqd and not d.hidden:
 					d.in_list_view = 1
 					cnt += 1
 					if cnt == 4: break
