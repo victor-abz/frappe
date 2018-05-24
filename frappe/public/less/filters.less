@@ -1,41 +1,68 @@
 @import 'variables';
 
-.active-tag-filters {
-	.add-filter, .filter-tag {
-		margin: 0 10px 10px 0;
+// .active-tag-filters {
+// 	.add-filter, .filter-tag {
+// 		margin: 0 10px 10px 0;
+// 	}
+// }
+
+// .active-tag-filters .btn-group {
+// 	white-space: nowrap;
+// 	font-size: 0;
+// }
+
+// .active-tag-filters .btn-group .btn-default {
+// 	background-color: transparent;
+// 	border: 1px solid @border-color;
+// 	color: @text-muted;
+// 	float: none;
+// }
+
+// .filter-box {
+// 	border-bottom: 1px solid @border-color;
+// 	padding: 10px 15px 3px;
+
+// 	.remove-filter {
+// 		margin-top: 6px;
+// 		margin-left: 15px;
+// 	}
+
+// 	.filter-field {
+// 		padding-right: 15px;
+// 		width: calc(100% - 36px);
+
+// 		.frappe-control {
+// 			position: relative;
+// 		}
+// 	}
+// }
+
+.filter-edit-wrapper {
+	display: flex;
+	padding: 10px 15px;
+
+	.frappe-control {
+		margin: 0;
 	}
 }
 
-.active-tag-filters .btn-group {
-	white-space: nowrap;
-	font-size: 0;
+.filter-tag-wrapper {
+	padding: 10px 15px;
 }
 
-.active-tag-filters .btn-group .btn-default {
-	background-color: transparent;
-	border: 1px solid @border-color;
-	color: @text-muted;
-	float: none;
+.filter-fieldname {
+	flex: 2;
+}
+.filter-condition {
+	flex: 1;
+}
+.filter-value {
+	flex: 2;
+}
+.filter-actions {
+	flex: 1;
 }
 
-.filter-box {
-	border-bottom: 1px solid @border-color;
-	padding: 10px 15px 3px;
-
-	.remove-filter {
-		margin-top: 6px;
-		margin-left: 15px;
-	}
-
-	.filter-field {
-		padding-right: 15px;
-		width: calc(100% - 36px);
-
-		.frappe-control {
-			position: relative;
-		}
-	}
-}
 
 // for sm and above
 @media (min-width: @screen-xs) {

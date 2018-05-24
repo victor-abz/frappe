@@ -1,3 +1,5 @@
+import Filters from "../ui/filters/filters";
+
 frappe.provide('frappe.views');
 
 frappe.views.BaseList = class BaseList {
@@ -651,13 +653,17 @@ class FilterArea {
 	}
 
 	make_filter_list() {
-		this.filter_list = new frappe.ui.FilterGroup({
-			base_list: this.list_view,
+		this.filter_list = new Filters({
 			parent: this.$filter_list_wrapper,
-			doctype: this.list_view.doctype,
-			default_filters: [],
-			on_change: () => this.refresh_list_view()
+			doctype: this.list_view.doctype
 		});
+		// this.filter_list = new frappe.ui.FilterGroup({
+		// 	base_list: this.list_view,
+		// 	parent: this.$filter_list_wrapper,
+		// 	doctype: this.list_view.doctype,
+		// 	default_filters: [],
+		// 	on_change: () => this.refresh_list_view()
+		// });
 	}
 }
 
