@@ -54,14 +54,15 @@ frappe.ui.form.Toolbar = Class.extend({
 	is_title_editable: function() {
 		if (this.frm.meta.title_field==="title"
 			&& this.frm.perm[0].write
-			&& !this.frm.get_docfield("title").options) {
+			&& !this.frm.get_docfield("title").options
+			&& !this.frm.doc.__islocal) {
 			return true;
 		} else {
 			return false;
 		}
 	},
 	can_rename: function() {
-		return this.frm.perm[0].write && this.frm.meta.allow_rename;
+		return this.frm.perm[0].write && this.frm.meta.allow_rename && !this.frm.doc.__islocal;
 	},
 	setup_editable_title: function() {
 		var me = this;
@@ -216,8 +217,7 @@ frappe.ui.form.Toolbar = Class.extend({
 	can_cancel: function() {
 		return this.get_docstatus()===1
 			&& this.frm.perm[0].cancel
-			&& !this.read_only
-			&& !this.has_workflow();
+			&& !this.read_only;
 	},
 	can_amend: function() {
 		return this.get_docstatus()===2
@@ -264,7 +264,10 @@ frappe.ui.form.Toolbar = Class.extend({
 			status = "Submit";
 		} else if (this.can_save()) {
 			if (!this.frm.save_disabled) {
-				status = "Save";
+				//Show the save button if there is no workflow or if there is a workflow and there are changes
+				if (this.has_workflow() ? this.frm.doc.__unsaved : true) {
+					status = "Save";
+				}
 			}
 		} else if (this.can_update()) {
 			status = "Update";

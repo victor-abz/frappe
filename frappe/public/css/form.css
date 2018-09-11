@@ -537,7 +537,7 @@ h6.uppercase,
 }
 .disabled-check {
   color: #f5f7fa;
-  margin-right: 3px;
+  margin-right: 5px;
   margin-bottom: -2px;
 }
 .like-disabled-input.for-description {
@@ -611,6 +611,9 @@ select.form-control {
   margin-left: 1px;
   font-weight: 500;
   color: #8D99A6;
+}
+.attach-btn {
+  margin-top: 10px;
 }
 @media (min-width: 768px) {
   .layout-main .form-column.col-sm-12 > form > .input-max-width {
@@ -724,4 +727,12 @@ trix-toolbar .trix-button-row {
 }
 trix-editor progress {
   display: none;
+.frappe-control[data-fieldtype="Attach"] .attached-file {
+  position: relative;
+  margin-top: 5px;
+}
+.frappe-control[data-fieldtype="Attach"] .attached-file .close {
+  position: absolute;
+  top: 0;
+  right: 0;
 }

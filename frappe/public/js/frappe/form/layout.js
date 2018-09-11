@@ -1,13 +1,6 @@
-// Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
-// MIT License. See license.txt
+import '../class';
+
 frappe.provide("frappe.ui.form");
-
-// 	- page
-//		- section
-//			- column
-//		- section
-
-
 frappe.ui.form.Layout = Class.extend({
 	init: function(opts) {
 		this.views = {};
@@ -25,7 +18,7 @@ frappe.ui.form.Layout = Class.extend({
 		this.wrapper = $('<div class="form-layout">').appendTo(this.parent);
 		this.message = $('<div class="form-message text-muted small hidden"></div>').appendTo(this.wrapper);
 		if(!this.fields) {
-			this.fields = frappe.meta.sort_docfields(frappe.meta.docfield_map[this.doctype]);
+			this.fields = this.get_doctype_fields();
 		}
 		this.setup_tabbing();
 		this.render();
@@ -34,6 +27,28 @@ frappe.ui.form.Layout = Class.extend({
 		if(!(this.wrapper.find(".frappe-control:visible").length || this.wrapper.find(".section-head.collapsed").length)) {
 			this.show_message(__("This form does not have any input"));
 		}
+	},
+	get_doctype_fields: function() {
+		let fields = [
+			{
+				parent: this.frm.doctype,
+				fieldtype: 'Data',
+				fieldname: '__newname',
+				reqd: 1,
+				hidden: 1,
+				label: __('Name'),
+				get_status: function(field) {
+					if (field.frm && field.frm.is_new()
+						&& field.frm.meta.autoname
+						&& ['prompt', 'name'].includes(field.frm.meta.autoname.toLowerCase())) {
+						return 'Write';
+					}
+					return 'None';
+				}
+			}
+		];
+		fields = fields.concat(frappe.meta.sort_docfields(frappe.meta.docfield_map[this.doctype]));
+		return fields;
 	},
 	show_message: function(html) {
 		if(html) {
@@ -97,19 +112,27 @@ frappe.ui.form.Layout = Class.extend({
 		});
 	},
 
-	make_field: function(df, colspan, render = false) {
+	replace_field: function(fieldname, df, render) {
+		df.fieldname = fieldname; // change of fieldname is avoided
+		if (this.fields_dict[fieldname] && this.fields_dict[fieldname].df) {
+			const fieldobj = this.init_field(df, render);
+			this.fields_dict[fieldname].$wrapper.remove();
+			this.fields_list.splice(this.fields_dict[fieldname], 1, fieldobj);
+			this.fields_dict[fieldname] = fieldobj;
+			if (this.frm) {
+				fieldobj.perm = this.frm.perm;
+			}
+			this.section.fields_list.splice(this.section.fields_dict[fieldname], 1, fieldobj);
+			this.section.fields_dict[fieldname] = fieldobj;
+			this.refresh_fields([df]);
+		}
+	},
+
+	make_field: function(df, colspan, render) {
 		!this.section && this.make_section();
 		!this.column && this.make_column();
 
-		var fieldobj = frappe.ui.form.make_control({
-			df: df,
-			doctype: this.doctype,
-			parent: this.column.wrapper.get(0),
-			frm: this.frm,
-			render_input: render
-		});
-
-		fieldobj.layout = this;
+		const fieldobj = this.init_field(df, render);
 		this.fields_list.push(fieldobj);
 		this.fields_dict[df.fieldname] = fieldobj;
 		if(this.frm) {
@@ -119,6 +142,20 @@ frappe.ui.form.Layout = Class.extend({
 		this.section.fields_list.push(fieldobj);
 		this.section.fields_dict[df.fieldname] = fieldobj;
 	},
+
+	init_field: function(df, render = false) {
+		const fieldobj = frappe.ui.form.make_control({
+			df: df,
+			doctype: this.doctype,
+			parent: this.column.wrapper.get(0),
+			frm: this.frm,
+			render_input: render
+		});
+
+		fieldobj.layout = this;
+		return fieldobj;
+	},
+
 	make_page: function(df) {
 		var me = this,
 			head = $('<div class="form-clickable-section text-center">\
@@ -212,9 +249,29 @@ frappe.ui.form.Layout = Class.extend({
 				if(cnt % 2) {
 					$this.addClass("shaded-section");
 				}
-				cnt ++;
+				cnt++;
 			}
 		});
+	},
+
+	refresh_fields: function(fields) {
+		let fieldnames = fields.map((field) => {
+			if(field.fieldname) return field.fieldname;
+		});
+
+		this.fields_list.map(fieldobj => {
+			if(fieldnames.includes(fieldobj.df.fieldname)) {
+				fieldobj.refresh();
+				if(fieldobj.df["default"]) {
+					fieldobj.set_input(fieldobj.df["default"]);
+				}
+			}
+		});
+	},
+
+	add_fields: function(fields) {
+		this.render(fields);
+		this.refresh_fields(fields);
 	},
 
 	refresh_section_collapse: function() {
@@ -235,7 +292,7 @@ frappe.ui.form.Layout = Class.extend({
 				}
 
 				if(df.fieldname === '_form_dashboard') {
-					collapse = false;
+					collapse = localStorage.getItem('collapseFormDashboard')==='yes' ? true : false;
 				}
 
 				section.collapse(collapse);
@@ -259,7 +316,7 @@ frappe.ui.form.Layout = Class.extend({
 					fieldobj.perm = me.frm.perm;
 				}
 			}
-			refresh && fieldobj.refresh && fieldobj.refresh();
+			refresh && fieldobj.df && fieldobj.refresh && fieldobj.refresh();
 		}
 	},
 
@@ -372,11 +429,9 @@ frappe.ui.form.Layout = Class.extend({
 			} else {
 				field.grid.grid_rows[0].toggle_view(true);
 			}
-		}
-		else if(field.editor) {
+		} else if(field.editor) {
 			field.editor.set_focus();
-		}
-		else if(field.$input) {
+		} else if(field.$input) {
 			field.$input.focus();
 		}
 	},
@@ -477,7 +532,7 @@ frappe.ui.form.Section = Class.extend({
 			wrapper: this.wrapper
 		};
 
-		if(this.df.collapsible) {
+		if (this.df.collapsible && this.df.fieldname !== '_form_dashboard') {
 			this.collapse(true);
 		}
 
@@ -550,6 +605,11 @@ frappe.ui.form.Section = Class.extend({
 		if(hide===undefined) {
 			hide = !this.body.hasClass("hide");
 		}
+
+		if (this.df.fieldname==='_form_dashboard') {
+			localStorage.setItem('collapseFormDashboard', hide ? 'yes' : 'no');
+		}
+
 		this.body.toggleClass("hide", hide);
 		this.head.toggleClass("collapsed", hide);
 		this.indicator.toggleClass("octicon-chevron-down", hide);
@@ -561,6 +621,8 @@ frappe.ui.form.Section = Class.extend({
 				f.refresh();
 			}
 		});
+
+
 	},
 	has_missing_mandatory: function() {
 		var missing_mandatory = false;
@@ -590,11 +652,13 @@ frappe.ui.form.Column = Class.extend({
 			</form>\
 		</div>').appendTo(this.section.body)
 			.find("form")
-			.on("submit", function() { return false; });
+			.on("submit", function() {
+				return false;
+			});
 
-		if(this.df.label) {
-			$('<label class="control-label">'+ __(this.df.label)
-				+'</label>').appendTo(this.wrapper);
+		if (this.df.label) {
+			$('<label class="control-label">' + __(this.df.label)
+				+ '</label>').appendTo(this.wrapper);
 		}
 	},
 	resize_all_columns: function() {

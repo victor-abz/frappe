@@ -5,32 +5,46 @@ from __future__ import unicode_literals
 
 import frappe
 import re
+import redis
 from frappe.utils import cint, strip_html_tags
 from frappe.model.base_document import get_controller
+from frappe.model.db_schema import varchar_len
 from six import text_type
 
 def setup_global_search_table():
-	'''Creates __global_seach table'''
+	"""
+	Creates __global_seach table
+	:return:
+	"""
 	if not '__global_search' in frappe.db.get_tables():
 		frappe.db.sql('''create table __global_search(
 			doctype varchar(100),
-			name varchar(140),
-			title varchar(140),
+			name varchar({varchar_len}),
+			title varchar({varchar_len}),
 			content text,
 			fulltext(content),
-			route varchar(140),
+			route varchar({varchar_len}),
 			published int(1) not null default 0,
 			unique `doctype_name` (doctype, name))
 			COLLATE=utf8mb4_unicode_ci
 			ENGINE=MyISAM
-			CHARACTER SET=utf8mb4''')
+			CHARACTER SET=utf8mb4'''.format(varchar_len=varchar_len))
+
 
 def reset():
-	'''Deletes all data in __global_search'''
+	"""
+	Deletes all data in __global_search
+	:return:
+	"""
 	frappe.db.sql('delete from __global_search')
 
+
 def get_doctypes_with_global_search(with_child_tables=True):
-	'''Return doctypes with global search fields'''
+	"""
+	Return doctypes with global search fields
+	:param with_child_tables:
+	:return:
+	"""
 	def _get():
 		global_search_doctypes = []
 		filters = {}
@@ -42,17 +56,25 @@ def get_doctypes_with_global_search(with_child_tables=True):
 				global_search_doctypes.append(d)
 
 		installed_apps = frappe.get_installed_apps()
+		module_app = frappe.local.module_app
 
-		doctypes = [d.name for d in global_search_doctypes
-			if frappe.local.module_app[frappe.scrub(d.module)] in installed_apps]
+		doctypes = [
+			d.name for d in global_search_doctypes
+			if module_app.get(frappe.scrub(d.module))
+			and module_app[frappe.scrub(d.module)] in installed_apps
+		]
+
 		return doctypes
 
 	return frappe.cache().get_value('doctypes_with_global_search', _get)
 
+
 def rebuild_for_doctype(doctype):
-	'''Rebuild entries of doctype's documents in __global_search on change of
-		searchable fields
-	:param doctype: Doctype '''
+	"""
+	Rebuild entries of doctype's documents in __global_search on change of
+	searchable fields
+	:param doctype: Doctype
+	"""
 
 	def _get_filters():
 		filters = frappe._dict({ "docstatus": ["!=", 2] })
@@ -120,11 +142,12 @@ def rebuild_for_doctype(doctype):
 				"name": frappe.db.escape(doc.name),
 				"content": frappe.db.escape(' ||| '.join(content or '')),
 				"published": published,
-				"title": frappe.db.escape(title or ''),
-				"route": frappe.db.escape(route or '')
+				"title": frappe.db.escape(title or '')[:int(varchar_len)],
+				"route": frappe.db.escape(route or '')[:int(varchar_len)]
 			})
 	if all_contents:
 		insert_values_for_multiple_docs(all_contents)
+
 
 def delete_global_search_records_for_doctype(doctype):
 	frappe.db.sql('''
@@ -132,6 +155,7 @@ def delete_global_search_records_for_doctype(doctype):
 			from __global_search
 		where
 			doctype = %s''', doctype, as_dict=True)
+
 
 def get_selected_fields(meta, global_search_fields):
 	fieldnames = [df.fieldname for df in global_search_fields]
@@ -144,6 +168,7 @@ def get_selected_fields(meta, global_search_fields):
 		fieldnames.append("is_website_published")
 
 	return fieldnames
+
 
 def get_children_data(doctype, meta):
 	"""
@@ -181,6 +206,7 @@ def get_children_data(doctype, meta):
 
 	return all_children, child_search_fields
 
+
 def insert_values_for_multiple_docs(all_contents):
 	values = []
 	for content in all_contents:
@@ -200,9 +226,11 @@ def insert_values_for_multiple_docs(all_contents):
 
 
 def update_global_search(doc):
-	'''Add values marked with `in_global_search` to
-		`frappe.flags.update_global_search` from given doc
-	:param doc: Document to be added to global search'''
+	"""
+	Add values marked with `in_global_search` to
+	`frappe.flags.update_global_search` from given doc
+	:param doc: Document to be added to global search
+	"""
 
 	if doc.docstatus > 1 or (doc.meta.has_field("enabled") and not doc.get("enabled")) \
 		or doc.get("disabled"):
@@ -215,6 +243,10 @@ def update_global_search(doc):
 	for field in doc.meta.get_global_search_fields():
 		if doc.get(field.fieldname) and field.fieldtype != "Table":
 			content.append(get_formatted_value(doc.get(field.fieldname), field))
+
+	tags = (doc.get('_user_tags') or '').strip()
+	if tags:
+		content.extend(list(filter(lambda x: x, tags.split(','))))
 
 	# Get children
 	for child in doc.meta.get_table_fields():
@@ -229,25 +261,60 @@ def update_global_search(doc):
 		if hasattr(doc, 'is_website_published') and doc.meta.allow_guest_to_view:
 			published = 1 if doc.is_website_published() else 0
 
+		title = (doc.get_title() or '')[:int(varchar_len)]
+		route = doc.get('route') if doc else ''
+
 		frappe.flags.update_global_search.append(
-			dict(doctype=doc.doctype, name=doc.name, content=' ||| '.join(content or ''),
-				published=published, title=doc.get_title(), route=doc.get('route')))
+			dict(
+				doctype=doc.doctype, 
+				name=doc.name, 
+				content=' ||| '.join(content or ''),
+				published=published, 
+				title=title, 
+				route=route
+			)
+		)
+
+		enqueue_global_search()
+
+
+def enqueue_global_search():
+	if frappe.flags.update_global_search:
+		try:
+			frappe.enqueue('frappe.utils.global_search.sync_global_search',
+				now=frappe.flags.in_test or frappe.flags.in_install or frappe.flags.in_migrate,
+				flags=frappe.flags.update_global_search, enqueue_after_commit=True)
+		except redis.exceptions.ConnectionError:
+			sync_global_search()
+
+		frappe.flags.update_global_search = []
+
 
 def get_formatted_value(value, field):
-	'''Prepare field from raw data'''
+	"""
+	Prepare field from raw data
+	:param value:
+	:param field:
+	:return:
+	"""
 
 	from six.moves.html_parser import HTMLParser
 
-	if(getattr(field, 'fieldtype', None) in ["Text", "Text Editor"]):
+	if getattr(field, 'fieldtype', None) in ["Text", "Text Editor"]:
 		h = HTMLParser()
 		value = h.unescape(value)
 		value = (re.subn(r'<[\s]*(script|style).*?</\1>(?s)', '', text_type(value))[0])
 		value = ' '.join(value.split())
 	return field.label + " : " + strip_html_tags(text_type(value))
 
+
 def sync_global_search(flags=None):
-	'''Add values from `flags` (frappe.flags.update_global_search) to __global_search.
-		This is called internally at the end of the request.'''
+	"""
+	Add values from `flags` (frappe.flags.update_global_search) to __global_search.
+	This is called internally at the end of the request.
+	:param flags:
+	:return:
+	"""
 
 	if not flags:
 		flags = frappe.flags.update_global_search
@@ -265,10 +332,13 @@ def sync_global_search(flags=None):
 
 	frappe.flags.update_global_search = []
 
+
 def delete_for_document(doc):
-	'''Delete the __global_search entry of a document that has
-		been deleted
-		:param doc: Deleted document'''
+	"""
+	Delete the __global_search entry of a document that has
+	been deleted
+	:param doc: Deleted document
+	"""
 
 	frappe.db.sql('''
 		delete
@@ -277,34 +347,44 @@ def delete_for_document(doc):
 			doctype = %s and
 			name = %s''', (doc.doctype, doc.name), as_dict=True)
 
+
 @frappe.whitelist()
 def search(text, start=0, limit=20, doctype=""):
-	'''Search for given text in __global_search
+	"""
+	Search for given text in __global_search
 	:param text: phrase to be searched
 	:param start: start results at, default 0
 	:param limit: number of results to return, default 20
-	:return: Array of result objects'''
-
-	text = "+" + text + "*"
-	if not doctype:
-		results = frappe.db.sql('''
-			select
-				doctype, name, content
-			from
-				__global_search
-			where
-				match(content) against (%s IN BOOLEAN MODE)
-			limit {start}, {limit}'''.format(start=start, limit=limit), text+"*", as_dict=True)
-	else:
-		results = frappe.db.sql('''
-			select
-				doctype, name, content
-			from
-				__global_search
-			where
-				doctype = %s AND
-				match(content) against (%s IN BOOLEAN MODE)
-			limit {start}, {limit}'''.format(start=start, limit=limit), (doctype, text), as_dict=True)
+	:return: Array of result objects
+	"""
+	results = []
+	texts = text.split('&')
+	for text in texts:
+		text = "+" + text + "*"
+		if not doctype:
+			result = frappe.db.sql('''
+				select
+					doctype, name, content
+				from
+					__global_search
+				where
+					match(content) against (%s IN BOOLEAN MODE)
+				limit {start}, {limit}'''.format(start=start, limit=limit), text+"*", as_dict=True)
+		else:
+			result = frappe.db.sql('''
+				select
+					doctype, name, content
+				from
+					__global_search
+				where
+					doctype = %s AND
+					match(content) against (%s IN BOOLEAN MODE)
+				limit {start}, {limit}'''.format(start=start, limit=limit), (doctype, text), as_dict=True)
+		tmp_result=[]
+		for i in result:
+			if i in results or not results:
+				tmp_result.append(i)
+		results = tmp_result
 
 	for r in results:
 		try:
@@ -315,23 +395,36 @@ def search(text, start=0, limit=20, doctype=""):
 
 	return results
 
+
 @frappe.whitelist(allow_guest=True)
 def web_search(text, start=0, limit=20):
-	'''Search for given text in __global_search where published = 1
+	"""
+	Search for given text in __global_search where published = 1
 	:param text: phrase to be searched
 	:param start: start results at, default 0
 	:param limit: number of results to return, default 20
-	:return: Array of result objects'''
+	:return: Array of result objects
+	"""
 
-	text = "+" + text + "*"
-	results = frappe.db.sql('''
-		select
-			doctype, name, content, title, route
-		from
-			__global_search
-		where
-			published = 1 and
-			match(content) against (%s IN BOOLEAN MODE)
-		limit {start}, {limit}'''.format(start=start, limit=limit),
-		text, as_dict=True)
+	results = []
+	texts = text.split('&')
+	for text in texts:
+		text = "+" + text + "*"
+		result = frappe.db.sql('''
+			select
+				doctype, name, content, title, route
+			from
+				__global_search
+			where
+				published = 1 and
+				match(content) against (%s IN BOOLEAN MODE)
+			limit {start}, {limit}'''.format(start=start, limit=limit),
+			text, as_dict=True)
+
+		tmp_result=[]
+		for i in result:
+			if i in results or not results:
+				tmp_result.append(i)
+		results = tmp_result
+
 	return results

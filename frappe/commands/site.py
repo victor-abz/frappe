@@ -1,15 +1,20 @@
 from __future__ import unicode_literals, absolute_import, print_function
 import click
-import hashlib, os, sys, compileall
+import hashlib, os, sys, compileall, re
 import frappe
 from frappe import _
-from _mysql_exceptions import ProgrammingError
 from frappe.commands import pass_context, get_site
 from frappe.commands.scheduler import _is_scheduler_enabled
 from frappe.limits import update_limits, get_limits
 from frappe.installer import update_site_config
 from frappe.utils import touch_file, get_site_path
 from six import text_type
+
+# imports - third-party imports
+from pymysql.constants import ER
+
+# imports - module imports
+from frappe.exceptions import SQLError
 
 @click.command('new-site')
 @click.argument('site')
@@ -96,7 +101,7 @@ def restore(context, sql_file_path, mariadb_root_username=None, mariadb_root_pas
 	if not os.path.exists(sql_file_path):
 		sql_file_path = '../' + sql_file_path
 		if not os.path.exists(sql_file_path):
-			print('Invalid path {0}' + sql_file_path[3:])
+			print('Invalid path {0}'.format(sql_file_path[3:]))
 			sys.exit(1)
 
 	if sql_file_path.endswith('sql.gz'):
@@ -218,7 +223,7 @@ def migrate(context, rebuild_website=False):
 		finally:
 			frappe.destroy()
 
-	compileall.compile_dir('../apps', quiet=1)
+	compileall.compile_dir('../apps', quiet=1, rx=re.compile('.*node_modules.*'))
 
 @click.command('run-patch')
 @click.argument('module')
@@ -272,8 +277,11 @@ def _use(site, sites_path='.'):
 	use(site, sites_path=sites_path)
 
 def use(site, sites_path='.'):
-	with open(os.path.join(sites_path,  "currentsite.txt"), "w") as sitefile:
-		sitefile.write(site)
+	if os.path.exists(os.path.join(sites_path, site)):
+		with open(os.path.join(sites_path,  "currentsite.txt"), "w") as sitefile:
+			sitefile.write(site)
+	else:
+		print("{} does not exist".format(site))
 
 @click.command('backup')
 @click.option('--with-files', default=False, is_flag=True, help="Take backup with files")
@@ -348,8 +356,8 @@ def _drop_site(site, root_login='root', root_password=None, archived_sites_path=
 
 	try:
 		scheduled_backup(ignore_files=False, force=True)
-	except ProgrammingError as err:
-		if err[0] == 1146:
+	except SQLError as err:
+		if err[0] == ER.NO_SUCH_TABLE:
 			if force:
 				pass
 			else:
@@ -400,8 +408,9 @@ def move(dest_dir, site):
 
 @click.command('set-admin-password')
 @click.argument('admin-password')
+@click.option('--logout-all-sessions', help='Logout from all sessions', is_flag=True, default=False)
 @pass_context
-def set_admin_password(context, admin_password):
+def set_admin_password(context, admin_password, logout_all_sessions=False):
 	"Set Administrator password for a site"
 	import getpass
 	from frappe.utils.password import update_password
@@ -414,7 +423,7 @@ def set_admin_password(context, admin_password):
 				admin_password = getpass.getpass("Administrator's password for {0}: ".format(site))
 
 			frappe.connect()
-			update_password('Administrator', admin_password)
+			update_password(user='Administrator', pwd=admin_password, logout_all_sessions=logout_all_sessions)
 			frappe.db.commit()
 			admin_password = None
 		finally:

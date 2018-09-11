@@ -18,27 +18,63 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 	var freeze_message = working_label ? __(working_label) : "";
 
 	var save = function () {
-		check_name(function () {
-			$(frm.wrapper).addClass('validated-form');
-			if (check_mandatory()) {
-				_call({
-					method: "frappe.desk.form.save.savedocs",
-					args: { doc: frm.doc, action: action },
-					callback: function (r) {
-						$(document).trigger("save", [frm.doc]);
-						callback(r);
-					},
-					error: function (r) {
-						callback(r);
-					},
-					btn: btn,
-					freeze_message: freeze_message
-				});
-			} else {
-				$(btn).prop("disabled", false);
-			}
+		remove_empty_rows();
+
+		$(frm.wrapper).addClass('validated-form');
+		if (check_mandatory()) {
+			_call({
+				method: "frappe.desk.form.save.savedocs",
+				args: { doc: frm.doc, action: action },
+				callback: function (r) {
+					$(document).trigger("save", [frm.doc]);
+					callback(r);
+				},
+				error: function (r) {
+					callback(r);
+				},
+				btn: btn,
+				freeze_message: freeze_message
+			});
+		} else {
+			$(btn).prop("disabled", false);
+		}
+	};
+
+	var remove_empty_rows = function() {
+		/**
+		This function removes empty rows. Note that in this function, a row is considered
+		empty if the fields with `in_list_view: 1` are undefined or falsy because that's
+		what users also consider to be an empty row
+		 */
+		const docs = frappe.model.get_all_docs(frm.doc);
+
+		// we should only worry about table data
+		const tables = docs.filter(function(d){
+			return frappe.model.is_table(d.doctype);
 		});
 
+		tables.map(
+			function(doc){
+				const cells = frappe.meta.docfield_list[doc.doctype] || [];
+
+				const in_list_view_cells = cells.filter(function(df) {
+					return cint(df.in_list_view) === 1;
+				});
+
+				var is_empty_row = function(cells) {
+					for (var i=0; i < cells.length; i++){
+						if(locals[doc.doctype][doc.name][cells[i].fieldname]){
+							return false;
+						}
+					}
+					return true;
+				}
+
+				if (is_empty_row(in_list_view_cells)) {
+					frappe.model.clear_doc(doc.doctype, doc.name);
+				}
+			}
+		);
 	};
 
 	var cancel = function () {
@@ -69,36 +105,6 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 		});
 	};
 
-	var check_name = function (callback) {
-		var doc = frm.doc;
-		var meta = locals.DocType[doc.doctype];
-		if (doc.__islocal && (meta && meta.autoname
-			&& meta.autoname.toLowerCase() == 'prompt')) {
-			var d = frappe.prompt(__("Name"), function (values) {
-				var newname = values.value;
-				if (newname) {
-					doc.__newname = strip(newname);
-				} else {
-					frappe.msgprint(__("Name is required"));
-					throw "name required";
-				}
-
-				callback();
-
-			}, __('Enter the name of the new {0}', [doc.doctype]), __("Create"));
-
-			if (doc.__newname) {
-				d.set_value("value", doc.__newname);
-			}
-
-			d.onhide = function () {
-				$(btn).prop("disabled", false);
-			}
-		} else {
-			callback();
-		}
-	};
-
 	var check_mandatory = function () {
 		var me = this;
 		var has_errors = false;
@@ -122,9 +128,8 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 					if (df.reqd && !frappe.model.has_value(doc.doctype, doc.name, df.fieldname)) {
 						has_errors = true;
 						error_fields[error_fields.length] = __(df.label);
-
 						// scroll to field
-						if (!me.scroll_set) {
+						if (!frm.scroll_set) {
 							scroll_to(doc.parentfield || df.fieldname);
 						}
 
@@ -136,6 +141,7 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 
 				}
 			});
+
 			if (error_fields.length) {
 				if (doc.parenttype) {
 					var message = __('Mandatory fields required in table {0}, Row {1}',
@@ -184,7 +190,7 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 
 		return frappe.call({
 			freeze: true,
-			freeze_message: opts.freeze_message,
+			// freeze_message: opts.freeze_message,
 			method: opts.method,
 			args: opts.args,
 			btn: opts.btn,

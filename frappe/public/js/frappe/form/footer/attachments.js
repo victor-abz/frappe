@@ -62,18 +62,13 @@ frappe.ui.form.Attachments = Class.extend({
 		}
 
 		var me = this;
-		var $attach = $(repl('<li class="attachment-row">\
-				<a class="close">&times;</a>\
-				%(lock_icon)s\
-				<a href="%(file_url)s" target="_blank" title="%(file_name)s" \
-					class="ellipsis" style="max-width: calc(100% - 43px);">\
-					<span>%(file_name)s</span></a>\
-			</li>', {
-				lock_icon: attachment.is_private ? '<i class="fa fa-lock fa-fw text-warning"></i> ': "",
-				file_name: file_name,
-				file_url: frappe.urllib.get_full_url(file_url)
-			}))
-			.insertAfter(this.attachments_label.addClass("has-attachments"));
+
+		var $attach = $(frappe.render_template("attachment", { 
+			"file_path": "/desk#Form/File/" + fileid,
+			"icon": attachment.is_private ? "fa fa-lock" : "fa fa-unlock-alt",
+			"file_name": file_name,
+			"file_url": frappe.urllib.get_full_url(file_url)
+		})).insertAfter(this.attachments_label.addClass("has-attachments"));			
 
 		var $close =
 			$attach.find(".close")
@@ -140,7 +135,7 @@ frappe.ui.form.Attachments = Class.extend({
 				}
 				me.remove_fileid(fileid);
 				me.frm.get_docinfo().communications.push(r.message);
-				me.frm.timeline.refresh();
+				me.frm.timeline && me.frm.timeline.refresh();
 				if (callback) callback();
 			}
 		});
@@ -237,6 +232,7 @@ frappe.ui.get_upload_dialog = function(opts){
 							dialog.$wrapper.find('[name="file_url"]').val(r.message.file_url);
 							dialog.$wrapper.find('.private-file input').prop('checked', r.message.is_private);
 							opts.args.filename = r.message.file_name;
+							opts.args.is_private = r.message.is_private;
 						}
 					});
 				}
@@ -261,11 +257,17 @@ frappe.ui.get_upload_dialog = function(opts){
 			},
 		],
 	});
+
+
+
+
 	var btn = dialog.set_primary_action(__("Attach"));
 	btn.removeClass("btn-primary").addClass("btn-default");
 
 	dialog.show();
-	var upload_area = $('<div style="padding-bottom: 25px;"></div>').prependTo(dialog.body);
+	var upload_area = $('<div></div>').prependTo(dialog.body);
+
+	
 
 	frappe.upload.make({
 		parent: upload_area,

@@ -81,10 +81,11 @@ def get_monthly_goal_graph_data(title, doctype, docname, goal_value_field, goal_
 	months_formatted = []
 	values = []
 	values_formatted = []
-	for i in xrange(0, 12):
-		month_value = formatdate(add_months(today(), -i), "MM-yyyy")
-		month_word = getdate(month_value).strftime('%b')
-		month_year = getdate(month_value).strftime('%B') + ', ' + getdate(month_value).strftime('%Y')
+	for i in range(0, 12):
+		date_value = add_months(today(), -i)
+		month_value = formatdate(date_value, "MM-yyyy")
+		month_word = getdate(date_value).strftime('%b')
+		month_year = getdate(date_value).strftime('%B') + ', ' + getdate(date_value).strftime('%Y')
 		months.insert(0, month_word)
 		months_formatted.insert(0, month_year)
 		if month_value in month_to_value_dict:
@@ -94,32 +95,32 @@ def get_monthly_goal_graph_data(title, doctype, docname, goal_value_field, goal_
 		values.insert(0, val)
 		values_formatted.insert(0, format_value(val, meta.get_field(goal_total_field), doc))
 
-	specific_values = []
+	y_markers = []
 	summary_values = [
 		{
-			'name': _("This month"),
-			'color': 'green',
+			'title': _("This month"),
+			'color': '#ffa00a',
 			'value': formatted_value
 		}
 	]
 
 	if float(goal) > 0:
-		specific_values = [
+		y_markers = [
 			{
-				'name': _("Goal"),
-				'line_type': "dashed",
+				'label': _("Goal"),
+				'lineType': "dashed",
 				'value': goal
 			},
 		]
 		summary_values += [
 			{
-				'name': _("Goal"),
-				'color': 'blue',
+				'title': _("Goal"),
+				'color': '#5e64ff',
 				'value': formatted_goal
 			},
 			{
-				'name': _("Completed"),
-				'color': 'green',
+				'title': _("Completed"),
+				'color': '#28a745',
 				'value': str(int(round(float(current_month_value)/float(goal)*100))) + "%"
 			}
 		]
@@ -127,20 +128,19 @@ def get_monthly_goal_graph_data(title, doctype, docname, goal_value_field, goal_
 	data = {
 		'title': title,
 		# 'subtitle':
-		'y': [
-			{
-				'color': 'green',
-				'values': values,
-				'formatted': values_formatted
-			}
-		],
-		'x': {
-			'values': months,
-			'formatted': months_formatted
+
+		'data': {
+			'datasets': [
+				{
+					'values': values,
+					'formatted': values_formatted
+				}
+			],
+			'labels': months,
+			'yMarkers': y_markers
 		},
 
-		'specific_values': specific_values,
-		'summary': summary_values
+		'summary': summary_values,
 	}
 
 	return data

@@ -136,12 +136,12 @@ frappe.ui.form.AssignToDialog = Class.extend({
 				{fieldtype: 'Link', fieldname:'assign_to', options:'User',
 					label:__("Assign To"), reqd:true, filters: {'user_type': 'System User'}},
 				{fieldtype:'Check', fieldname:'myself', label:__("Assign to me"), "default":0},
-				{fieldtype:'Small Text', fieldname:'description', label:__("Comment"), reqd:true},
+				{fieldtype:'Small Text', fieldname:'description', label:__("Comment")},
 				{fieldtype: 'Section Break'},
 				{fieldtype: 'Column Break'},
 				{fieldtype:'Date', fieldname:'date', label: __("Complete By")},
 				{fieldtype:'Check', fieldname:'notify',
-					label:__("Notify by Email"), "default":1},
+					label:__("Notify by Email")},
 				{fieldtype: 'Column Break'},
 				{fieldtype:'Select', fieldname:'priority', label: __("Priority"),
 					options:[
@@ -170,7 +170,6 @@ frappe.ui.form.AssignToDialog = Class.extend({
 			me.get_field("assign_to").$wrapper.toggle(false);
 		} else {
 			me.set_value("assign_to", "");
-			me.set_value("notify", 1);
 			me.get_field("notify").$wrapper.toggle(true);
 			me.get_field("assign_to").$wrapper.toggle(true);
 		}
@@ -179,8 +178,8 @@ frappe.ui.form.AssignToDialog = Class.extend({
 });
 
 frappe.ui.add_assignment = function(opts, dialog) {
-	var assign_to = opts.obj.dialog.fields_dict.assign_to.get_value();
-	var args = opts.obj.dialog.get_values();
+	var assign_to = dialog.fields_dict.assign_to.get_value();
+	var args = dialog.get_values();
 	if(args && assign_to) {
 		return frappe.call({
 			method: opts.method,

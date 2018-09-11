@@ -207,13 +207,20 @@ frappe.ui.BaseList = Class.extend({
 						fieldtype = 'Data';
 						condition = 'like';
 					}
-					if(df.fieldtype == "Select" && df.options) {
+
+					if (df.fieldtype === "Select" && df.options) {
 						options = df.options.split("\n");
 						if(options.length > 0 && options[0] != "") {
 							options.unshift("");
 							options = options.join("\n");
 						}
 					}
+
+					if (df.fieldtype === 'Data' && df.options) {
+						// don't format email / number in filters
+						options = '';
+					}
+
 					let f = me.page.add_field({
 						fieldtype: fieldtype,
 						label: __(df.label),
@@ -322,7 +329,6 @@ frappe.ui.BaseList = Class.extend({
 
 		return frappe.call({
 			method: this.opts.method || 'frappe.desk.query_builder.runquery',
-			type: "GET",
 			freeze: this.opts.freeze !== undefined ? this.opts.freeze : true,
 			args: args,
 			callback: function (r) {

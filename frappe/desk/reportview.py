@@ -7,12 +7,15 @@ from __future__ import unicode_literals
 import frappe, json
 from six.moves import range
 import frappe.permissions
-import MySQLdb
 from frappe.model.db_query import DatabaseQuery
 from frappe import _
 from six import text_type, string_types, StringIO
 
+# imports - third-party imports
+import pymysql
+
 @frappe.whitelist()
+@frappe.read_only()
 def get():
 	args = get_form_params()
 
@@ -48,11 +51,13 @@ def get_form_params():
 	for field in fields:
 		key = field.split(" as ")[0]
 
+		if key.startswith('count('): continue
+
 		if "." in key:
 			parenttype, fieldname = key.split(".")[0][4:-1], key.split(".")[1].strip("`")
 		else:
 			parenttype = data.doctype
-			fieldname = fieldname.strip("`")
+			fieldname = field.strip("`")
 
 		df = frappe.get_meta(parenttype).get_field(fieldname)
 
@@ -74,7 +79,7 @@ def compress(data, args = {}):
 
 	if not data: return data
 	values = []
-	keys = data[0].keys()
+	keys = list(data[0])
 	for row in data:
 		new_row = []
 		for key in keys:
@@ -213,17 +218,22 @@ def delete_items():
 	il = json.loads(frappe.form_dict.get('items'))
 	doctype = frappe.form_dict.get('doctype')
 
+	failed = []
+
 	for i, d in enumerate(il):
 		try:
 			frappe.delete_doc(doctype, d)
 			if len(il) >= 5:
 				frappe.publish_realtime("progress",
-					dict(progress=[i+1, len(il)], title=_('Deleting {0}').format(doctype)),
-					user=frappe.session.user)
+					dict(progress=[i+1, len(il)], title=_('Deleting {0}').format(doctype), description=d),
+						user=frappe.session.user)
 		except Exception:
-			pass
+			failed.append(d)
+
+	return failed
 
 @frappe.whitelist()
+@frappe.read_only()
 def get_sidebar_stats(stats, doctype, filters=[]):
 	cat_tags = frappe.db.sql("""select tag.parent as category, tag.tag_name as tag
 		from `tabTag Doc Category` as docCat
@@ -244,7 +254,7 @@ def get_stats(stats, doctype, filters=[]):
 
 	try:
 		columns = frappe.db.get_table_columns(doctype)
-	except MySQLdb.OperationalError:
+	except pymysql.InternalError:
 		# raised when _user_tags column is added on the fly
 		columns = []
 
@@ -266,7 +276,7 @@ def get_stats(stats, doctype, filters=[]):
 		except frappe.SQLError:
 			# does not work for child tables
 			pass
-		except MySQLdb.OperationalError:
+		except pymysql.InternalError:
 			# raised when _user_tags column is added on the fly
 			pass
 	return stats
@@ -333,8 +343,8 @@ def get_match_cond(doctype):
 	cond = DatabaseQuery(doctype).build_match_conditions()
 	return ((' and ' + cond) if cond else "").replace("%", "%%")
 
-def build_match_conditions(doctype, as_condition=True):
-	match_conditions =  DatabaseQuery(doctype).build_match_conditions(as_condition=as_condition)
+def build_match_conditions(doctype, user=None, as_condition=True):
+	match_conditions =  DatabaseQuery(doctype, user=user).build_match_conditions(as_condition=as_condition)
 	if as_condition:
 		return match_conditions.replace("%", "%%")
 	else:
@@ -352,7 +362,7 @@ def get_filters_cond(doctype, filters, conditions, ignore_permissions=None, with
 			for f in filters:
 				if isinstance(f[1], string_types) and f[1][0] == '!':
 					flt.append([doctype, f[0], '!=', f[1][1:]])
-				elif isinstance(f[1], list) and \
+				elif isinstance(f[1], (list, tuple)) and \
 					f[1][0] in (">", "<", ">=", "<=", "like", "not like", "in", "not in", "between"):
 
 					flt.append([doctype, f[0], f[1][0], f[1][1]])

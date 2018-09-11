@@ -14,7 +14,7 @@ from frappe.twofactor import toggle_two_factor_auth
 class SystemSettings(Document):
 	def validate(self):
 		enable_password_policy = cint(self.enable_password_policy) and True or False
-		minimum_password_score = cint(self.minimum_password_score) or 0
+		minimum_password_score = cint(getattr(self, 'minimum_password_score', 0)) or 0
 		if enable_password_policy and minimum_password_score <= 0:
 			frappe.throw(_("Please select Minimum Password Score"))
 		elif not enable_password_policy:
@@ -33,6 +33,7 @@ class SystemSettings(Document):
 			toggle_two_factor_auth(True, roles=['All'])
 		else:
 			self.bypass_2fa_for_retricted_ip_users = 0
+			self.bypass_restrict_ip_check_if_2fa_enabled = 0
 
 	def on_update(self):
 		for df in self.meta.get("fields"):

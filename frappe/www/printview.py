@@ -8,7 +8,6 @@ from frappe import _
 
 from frappe.modules import get_doc_path
 from frappe.utils import cint, strip_html
-from markdown2 import markdown
 from six import string_types
 
 no_cache = 1
@@ -41,7 +40,8 @@ def get_context(context):
 			no_letterhead=frappe.form_dict.no_letterhead),
 		"css": get_print_style(frappe.form_dict.style, print_format),
 		"comment": frappe.session.user,
-		"title": doc.get(meta.title_field) if meta.title_field else doc.name
+		"title": doc.get(meta.title_field) if meta.title_field else doc.name,
+		"has_rtl": True if frappe.local.lang in ["ar", "he", "fa"] else False
 	}
 
 def get_print_format_doc(print_format_name, meta):
@@ -168,11 +168,11 @@ def convert_markdown(doc, meta):
 		if field.fieldtype=='Text Editor':
 			value = doc.get(field.fieldname)
 			if value and '<!-- markdown -->' in value:
-				doc.set(field.fieldname, markdown(value))
+				doc.set(field.fieldname, frappe.utils.md_to_html(value))
 
 @frappe.whitelist()
 def get_html_and_style(doc, name=None, print_format=None, meta=None,
-	no_letterhead=None, trigger_print=False, style=None):
+	no_letterhead=None, trigger_print=False, style=None, lang=None):
 	"""Returns `html` and `style` of print format, used in PDF etc"""
 
 	if isinstance(doc, string_types) and isinstance(name, string_types):
@@ -326,7 +326,7 @@ def is_visible(df, doc):
 		if df.fieldname in doc.hide_in_print_layout:
 			return False
 
-	if df.permlevel > 0 and not doc.has_permlevel_access_to(df.fieldname, df):
+	if df.permlevel or 0 > 0 and not doc.has_permlevel_access_to(df.fieldname, df):
 		return False
 
 	return not doc.is_print_hide(df.fieldname, df)
@@ -337,6 +337,9 @@ def has_value(df, doc):
 		return False
 
 	elif isinstance(value, string_types) and not strip_html(value).strip():
+		if df.fieldtype in ["Text", "Text Editor"]:
+			return True
+
 		return False
 
 	elif isinstance(value, list) and not len(value):
@@ -398,7 +401,7 @@ def get_visible_columns(data, table_meta, df):
 	doc = data[0] or frappe.new_doc(df.options)
 	def add_column(col_df):
 		return is_visible(col_df, doc) \
-			and column_has_value(data, col_df.get("fieldname"))
+			and column_has_value(data, col_df.get("fieldname"), col_df)
 
 	if df.get("visible_columns"):
 		# columns specified by column builder
@@ -418,9 +421,12 @@ def get_visible_columns(data, table_meta, df):
 
 	return columns
 
-def column_has_value(data, fieldname):
+def column_has_value(data, fieldname, col_df):
 	"""Check if at least one cell in column has non-zero and non-blank value"""
 	has_value = False
+
+	if col_df.fieldtype in ['Float', 'Currency'] and not col_df.print_hide_if_no_value:
+		return True
 
 	for row in data:
 		value = row.get(fieldname)

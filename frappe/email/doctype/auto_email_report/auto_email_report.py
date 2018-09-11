@@ -12,7 +12,7 @@ from frappe.utils import now, global_date_format, format_time
 from frappe.utils.xlsxutils import make_xlsx
 from frappe.utils.csvutils import to_csv
 
-max_reports_per_user = 3
+max_reports_per_user = frappe.local.conf.max_reports_per_user or 3
 
 class AutoEmailReport(Document):
 	def autoname(self):
@@ -108,6 +108,7 @@ class AutoEmailReport(Document):
 			new_row = []
 			out.append(new_row)
 			for df in columns:
+				if not row.get(df.fieldname): continue
 				new_row.append(frappe.format(row[df.fieldname], df, row))
 
 		return out
@@ -139,7 +140,9 @@ class AutoEmailReport(Document):
 			recipients = self.email_to.split(),
 			subject = self.name,
 			message = message,
-			attachments = attachments
+			attachments = attachments,
+			reference_doctype = self.doctype,
+			reference_name = self.name
 		)
 
 @frappe.whitelist()

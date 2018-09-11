@@ -33,7 +33,7 @@ class TestScheduler(TestCase):
 		next_event = last_event + relativedelta(minutes=30)
 
 		enqueue_applicable_events(frappe.local.site, next_event, last_event)
-		self.assertFalse("all" in frappe.flags.ran_schedulers)
+		self.assertFalse("cron" in frappe.flags.ran_schedulers)
 
 		# maintain last_event and next_event on the same day
 		last_event = now_datetime().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -43,7 +43,7 @@ class TestScheduler(TestCase):
 		self.assertTrue("all" in frappe.flags.ran_schedulers)
 		self.assertTrue("hourly" in frappe.flags.ran_schedulers)
 
-		del frappe.flags['enabled_events']
+		frappe.flags.enabled_events = None
 
 	def test_enabled_events_day_change(self):
 		val = json.dumps(["daily", "daily_long", "weekly", "weekly_long", "monthly", "monthly_long"])
@@ -55,7 +55,7 @@ class TestScheduler(TestCase):
 
 		enqueue_applicable_events(frappe.local.site, next_event, last_event)
 		self.assertTrue("all" in frappe.flags.ran_schedulers)
-		self.assertTrue("hourly" in frappe.flags.ran_schedulers)
+		self.assertFalse("hourly" in frappe.flags.ran_schedulers)
 
 
 	def test_restrict_scheduler_events(self):

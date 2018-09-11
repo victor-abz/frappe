@@ -9,8 +9,8 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Stripe Settings",
-					"description": _("Stripe payment gateway settings"),
+					"name": "Braintree Settings",
+					"description": _("Braintree payment gateway settings"),
 				},
 				{
 					"type": "doctype",
@@ -22,6 +22,11 @@ def get_data():
 					"name": "Razorpay Settings",
 					"description": _("Razorpay Payment gateway settings"),
 				},
+				{
+					"type": "doctype",
+					"name": "Stripe Settings",
+					"description": _("Stripe payment gateway settings"),
+				},
 			]
 		},
 		{
@@ -32,6 +37,11 @@ def get_data():
 					"name": "Dropbox Settings",
 					"description": _("Dropbox backup settings"),
 				},
+				{
+					"type": "doctype",
+					"name": "S3 Backup Settings",
+					"description": _("S3 Backup Settings"),
+				},
 			]
 		},
 		{
@@ -39,7 +49,7 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Social Login Keys",
+					"name": "Social Login Key",
 					"description": _("Enter keys to enable login via Facebook, Google, GitHub."),
 				},
 				{
@@ -60,8 +70,38 @@ def get_data():
 			]
 		},
 		{
-			"label": _("External Documents"),
+			"label": _("Webhook"),
 			"items": [
+				{
+					"type": "doctype",
+					"name": "Webhook",
+					"description": _("Webhooks calling API requests into web apps"),
+				},
+				{
+					"type": "doctype",
+					"name": "Slack Webhook URL",
+					"description": _("Slack Webhooks for internal integration"),
+				},
+			]
+		},
+		{
+			"label": _("Google Services"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Google Maps Settings",
+					"description": _("Google Maps integration"),
+				},
+				{
+					"type": "doctype",
+					"name": "GCalendar Settings",
+					"description": _("Configure your google calendar integration"),
+				},
+				{
+					"type": "doctype",
+					"name": "GCalendar Account",
+					"description": _("Configure accounts for google calendar"),
+				},
 				{
 					"type": "doctype",
 					"name": "GSuite Settings",
@@ -71,13 +111,7 @@ def get_data():
 					"type": "doctype",
 					"name": "GSuite Templates",
 					"description": _("Google GSuite Templates to integration with DocTypes"),
-				},
-				{
-					"type": "doctype",
-					"name": "Webhook",
-					"description": _("Webhooks calling API requests into web apps"),
 				}
-
 			]
 		}
 	]

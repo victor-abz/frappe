@@ -1,10 +1,11 @@
 frappe.RoleEditor = Class.extend({
-	init: function(wrapper, frm) {
+	init: function(wrapper, frm, disable) {
 		var me = this;
 		this.frm = frm;
 		this.wrapper = wrapper;
-		$(wrapper).html('<div class="help">' + __("Loading") + '...</div>')
-		return frappe.call({
+		this.disable = disable;
+		$(wrapper).html('<div class="help">' + __("Loading") + '...</div>');
+		frappe.call({
 			method: 'frappe.core.doctype.user.user.get_all_roles',
 			callback: function(r) {
 				me.roles = r.message;
@@ -21,33 +22,35 @@ frappe.RoleEditor = Class.extend({
 	show_roles: function() {
 		var me = this;
 		$(this.wrapper).empty();
-		var role_toolbar = $('<p><button class="btn btn-default btn-add btn-sm" style="margin-right: 5px;"></button>\
-			<button class="btn btn-sm btn-default btn-remove"></button></p>').appendTo($(this.wrapper));
+		if(me.frm.doctype != 'User') {
+			var role_toolbar = $('<p><button class="btn btn-default btn-add btn-sm" style="margin-right: 5px;"></button>\
+				<button class="btn btn-sm btn-default btn-remove"></button></p>').appendTo($(this.wrapper));
 
-		role_toolbar.find(".btn-add")
-			.html(__('Add all roles'))
-			.on("click", function () {
-				$(me.wrapper).find('input[type="checkbox"]').each(function (i, check) {
-					if (!$(check).is(":checked")) {
-						check.checked = true;
-					}
+			role_toolbar.find(".btn-add")
+				.html(__('Add all roles'))
+				.on("click", function() {
+					$(me.wrapper).find('input[type="checkbox"]').each(function(i, check) {
+						if (!$(check).is(":checked")) {
+							check.checked = true;
+						}
+					});
 				});
-			});
 
-		role_toolbar.find(".btn-remove")
-			.html(__('Clear all roles'))
-			.on("click", function() {
-				$(me.wrapper).find('input[type="checkbox"]').each(function(i, check) {
-					if($(check).is(":checked")) {
-						check.checked = false;
-					}
+			role_toolbar.find(".btn-remove")
+				.html(__('Clear all roles'))
+				.on("click", function() {
+					$(me.wrapper).find('input[type="checkbox"]').each(function(i, check) {
+						if($(check).is(":checked")) {
+							check.checked = false;
+						}
+					});
 				});
-			});
+		}
 
 		$.each(this.roles, function(i, role) {
 			$(me.wrapper).append(repl('<div class="user-role" \
 				data-user-role="%(role_value)s">\
-				<input type="checkbox" style="margin-top:0px;"> \
+				<input type="checkbox" style="margin-top:0px;" class="box"> \
 				<a href="#" class="grey role">%(role_display)s</a>\
 			</div>', {role_value: role,role_display:__(role)}));
 		});
@@ -57,16 +60,19 @@ frappe.RoleEditor = Class.extend({
 			me.frm.dirty();
 		});
 		$(this.wrapper).find('.user-role a').click(function() {
-			me.show_permissions($(this).parent().attr('data-user-role'))
+			me.show_permissions($(this).parent().attr('data-user-role'));
 			return false;
 		});
 	},
 	show: function() {
 		var me = this;
+		$('.box').attr('disabled', this.disable);
 
 		// uncheck all roles
 		$(this.wrapper).find('input[type="checkbox"]')
-			.each(function(i, checkbox) { checkbox.checked = false; });
+			.each(function(i, checkbox) {
+				checkbox.checked = false;
+			});
 
 		// set user roles as checked
 		$.each((me.frm.doc.roles || []), function(i, user_role) {
@@ -74,6 +80,11 @@ frappe.RoleEditor = Class.extend({
 				.find('[data-user-role="'+user_role.role+'"] input[type="checkbox"]').get(0);
 			if(checkbox) checkbox.checked = true;
 		});
+
+		this.set_enable_disable();
+	},
+	set_enable_disable: function() {
+		$('.box').attr('disabled', this.disable ? true : false);
 	},
 	set_roles_in_table: function() {
 		var opts = this.get_roles();
@@ -117,13 +128,13 @@ frappe.RoleEditor = Class.extend({
 		return {
 			checked_roles: checked_roles,
 			unchecked_roles: unchecked_roles
-		}
+		};
 	},
 	show_permissions: function(role) {
 		// show permissions for a role
 		var me = this;
 		if(!this.perm_dialog)
-			this.make_perm_dialog()
+			this.make_perm_dialog();
 		$(this.perm_dialog.body).empty();
 		return frappe.call({
 			method: 'frappe.core.doctype.user.user.get_perm_info',
@@ -135,7 +146,6 @@ frappe.RoleEditor = Class.extend({
 				$body.append('<table class="user-perm"><thead><tr>'
 					+ '<th style="text-align: left">' + __('Document Type') + '</th>'
 					+ '<th>' + __('Level') + '</th>'
-					+ '<th>' + __('Apply User Permissions') + '</th>'
 					+ '<th>' + __('Read') + '</th>'
 					+ '<th>' + __('Write') + '</th>'
 					+ '<th>' + __('Create') + '</th>'
@@ -143,11 +153,6 @@ frappe.RoleEditor = Class.extend({
 					+ '<th>' + __('Submit') + '</th>'
 					+ '<th>' + __('Cancel') + '</th>'
 					+ '<th>' + __('Amend') + '</th>'
-					// + '<th>' + __('Report') + '</th>'
-					// + '<th>' + __('Import') + '</th>'
-					// + '<th>' + __('Export') + '</th>'
-					// + '<th>' + __('Print') + '</th>'
-					// + '<th>' + __('Email') + '</th>'
 					+ '<th>' + __('Set User Permissions') + '</th>'
 					+ '</tr></thead><tbody></tbody></table>');
 
@@ -168,21 +173,15 @@ frappe.RoleEditor = Class.extend({
 					$body.find('tbody').append(repl('<tr>\
 						<td style="text-align: left">%(parent)s</td>\
 						<td>%(permlevel)s</td>\
-						<td>%(apply_user_permissions)s</td>\
 						<td>%(read)s</td>\
 						<td>%(write)s</td>\
 						<td>%(create)s</td>\
 						<td>%(delete)s</td>\
 						<td>%(submit)s</td>\
 						<td>%(cancel)s</td>\
-						<td>%(amend)s</td>'
-						// + '<td>%(report)s</td>\
-						// <td>%(import)s</td>\
-						// <td>%(export)s</td>\
-						// <td>%(print)s</td>\
-						// <td>%(email)s</td>'
-						+ '<td>%(set_user_permissions)s</td>\
-						</tr>', perm))
+						<td>%(amend)s</td>\
+						<td>%(set_user_permissions)s</td>\
+						</tr>', perm));
 				}
 
 				me.perm_dialog.show();

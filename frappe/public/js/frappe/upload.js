@@ -12,13 +12,13 @@ frappe.upload = {
 
 		// whether to show public/private checkbox or not
 		opts.show_private = !("is_private" in opts);
-		
+
 		// make private by default
 		if (!("options" in opts) || ("options" in opts &&
-			(!opts.options.toLowerCase()=="public" && !opts.options.toLowerCase()=="image"))) {
+			(opts.options && !opts.options.toLowerCase()=="public" && !opts.options.toLowerCase()=="image"))) {
 			opts.is_private = 1;
 		}
-		
+
 		var d = null;
 		// create new dialog if no parent given
 		if(!opts.parent) {
@@ -27,6 +27,7 @@ frappe.upload = {
 				primary_action_label: __('Attach'),
 				primary_action: function() {}
 			});
+
 			opts.parent = d.body;
 			opts.btn = d.get_primary_btn();
 			d.show();
@@ -39,6 +40,21 @@ frappe.upload = {
 		// bind pseudo browse button
 		$upload.find(".btn-browse").on("click",
 			function() { $file_input.click(); });
+
+		// dropzone upload
+		const $dropzone = $('<div style="padding: 20px 10px 0px 10px;"/>');
+		new frappe.ui.DropZone($dropzone, {
+			drop: function (files) {
+				$dropzone.hide();
+
+				opts.files = opts.files ? [...opts.files, ...files] : files;
+
+				$file_input.trigger('change');
+			}
+		});
+		// end dropzone
+
+		$upload.append($dropzone);
 
 		$file_input.on("change", function() {
 			if (this.files.length > 0 || opts.files) {
@@ -57,6 +73,7 @@ frappe.upload = {
 				$upload.find(".web-link-wrapper").addClass("hidden");
 				$upload.find(".btn-browse").removeClass("btn-primary").addClass("btn-default");
 				$uploaded_files_wrapper.removeClass('hidden').empty();
+				$uploaded_files_wrapper.css({ 'margin-bottom': '25px' });
 
 				file_array = file_array.map(
 					file => Object.assign(file, {is_private: opts.is_private ? 1 : 0})
@@ -131,7 +148,7 @@ frappe.upload = {
 
 
 		if(!opts.btn) {
-			opts.btn = $('<button class="btn btn-default btn-sm">' + __("Attach")
+			opts.btn = $('<button class="btn btn-default btn-sm attach-btn">' + __("Attach")
 				+ '</div>').appendTo($upload);
 		} else {
 			$(opts.btn).unbind("click");
@@ -239,12 +256,12 @@ frappe.upload = {
 		}
 	},
 
-	_upload_file: function(fileobj, args, opts) {
+	_upload_file: function(fileobj, args, opts, dataurl) {
 		if (args.file_size) {
 			frappe.upload.validate_max_file_size(args.file_size);
 		}
 		if(opts.on_attach) {
-			opts.on_attach(args)
+			opts.on_attach(args, dataurl)
 		} else {
 			if (opts.confirm_is_private) {
 				frappe.prompt({
@@ -280,31 +297,55 @@ frappe.upload = {
 
 		let start_complete = frappe.cur_progress ? frappe.cur_progress.percent : 0;
 
-		frappe.socketio.uploader.start({
-			file: fileobj,
-			filename: args.filename,
-			is_private: args.is_private,
-			fallback: () => {
-				// if fails, use old filereader
-				let freader = new FileReader();
-				freader.onload = function() {
-					var dataurl = freader.result;
-					args.filedata = freader.result.split(",")[1];
-					args.file_size = fileobj.size;
-					frappe.upload._upload_file(fileobj, args, opts, dataurl);
-				};
-				freader.readAsDataURL(fileobj);
-			},
-			callback: (data) => {
-				args.file_url = data.file_url;
-				frappe.upload._upload_file(fileobj, args, opts);
-			},
-			on_progress: (percent_complete) => {
-				let increment = (flt(percent_complete) / frappe.upload.total_files);
-				frappe.show_progress(__('Uploading'),
-					start_complete + increment);
-			}
-		});
+		var upload_with_filedata = function() {
+			let freader = new FileReader();
+			freader.onload = function() {
+				var dataurl = freader.result;
+				args.filedata = freader.result.split(",")[1];
+				args.file_size = fileobj.size;
+				frappe.upload._upload_file(fileobj, args, opts, dataurl);
+			};
+			freader.readAsDataURL(fileobj);
+		}
+
+		const file_not_big_enough = fileobj.size <= 24576;
+
+		if (!frappe.socketio || opts.no_socketio ||
+				frappe.flags.no_socketio || file_not_big_enough) {
+			upload_with_filedata();
+			return;
+		} else {
+			args.file_size = fileobj.size;
+			frappe.call({
+				method: 'frappe.utils.file_manager.validate_filename',
+				args: {"filename": args.filename},
+				callback: function(r) {
+					args.filename = r.message;
+					upload_through_socketio();
+				}
+			});
+		}
+
+		var upload_through_socketio = function() {
+			frappe.socketio.uploader.start({
+				file: fileobj,
+				filename: args.filename,
+				is_private: args.is_private,
+				fallback: () => {
+					// if fails, use old filereader
+					upload_with_filedata();
+				},
+				callback: (data) => {
+					args.file_url = data.file_url;
+					frappe.upload._upload_file(fileobj, args, opts);
+				},
+				on_progress: (percent_complete) => {
+					let increment = (flt(percent_complete) / frappe.upload.total_files);
+					frappe.show_progress(__('Uploading'),
+						start_complete + increment);
+				}
+			});
+		}
 	},
 
 	upload_to_server: function(file, args, opts) {
@@ -327,7 +368,7 @@ frappe.upload = {
 				}
 				var attachment = r.message;
 				opts.loopcallback && opts.loopcallback();
-				opts.callback && opts.callback(attachment, r);
+				opts.callback && opts.callback(attachment, r, args);
 				$(document).trigger("upload_complete", attachment);
 			},
 			error: function(r) {
@@ -366,7 +407,7 @@ frappe.upload = {
 			frappe.throw(__("File size exceeded the maximum allowed size of {0} MB", [max_file_size / 1048576]));
 		}
 	},
-	multifile_upload:function(fileobjs, args, opts) {
+	multifile_upload:function(fileobjs, args, opts={}) {
 		//loop through filenames and checkboxes then append to list
 		var fields = [];
 		for (var i =0,j = fileobjs.length;i<j;i++) {

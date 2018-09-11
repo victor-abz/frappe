@@ -3,10 +3,11 @@
 
 from __future__ import unicode_literals
 from six import iteritems, string_types
+import datetime
 import frappe, sys
 from frappe import _
 from frappe.utils import (cint, flt, now, cstr, strip_html, getdate, get_datetime, to_timedelta,
-	sanitize_html, sanitize_email)
+	sanitize_html, sanitize_email, cast_fieldtype)
 from frappe.model import default_fields
 from frappe.model.naming import set_new_name
 from frappe.model.utils.link_count import notify_link_count
@@ -26,7 +27,7 @@ def get_controller(doctype):
 	global _classes
 
 	if not doctype in _classes:
-		module_name, custom = frappe.db.get_value("DocType", doctype, ["module", "custom"]) \
+		module_name, custom = frappe.db.get_value("DocType", doctype, ("module", "custom"), cache=True) \
 			or ["Core", False]
 
 		if custom:
@@ -139,10 +140,19 @@ class BaseDocument(object):
 
 			# reference parent document
 			value.parent_doc = self
+
 			return value
 		else:
+
+			# metaclasses may have arbitrary lists
+			# which we can ignore
+			if (getattr(self, '_metaclass', None)
+				or self.__class__.__name__ in ('Meta', 'FormMeta', 'DocField')):
+				return value
+
 			raise ValueError(
-				"Document attached to child table must be a dict or BaseDocument, not " + str(type(value))[1:-1]
+				'Document for field "{0}" attached to child table of "{1}" must be a dict or BaseDocument, not {2} ({3})'.format(key,
+					self.name, str(type(value))[1:-1], value)
 			)
 
 	def extend(self, key, value):
@@ -181,7 +191,7 @@ class BaseDocument(object):
 
 		return value
 
-	def get_valid_dict(self, sanitize=True):
+	def get_valid_dict(self, sanitize=True, convert_dates_to_str=False):
 		d = frappe._dict()
 		for fieldname in self.meta.get_valid_columns():
 			d[fieldname] = self.get(fieldname)
@@ -205,7 +215,7 @@ class BaseDocument(object):
 				elif df.fieldtype in ("Currency", "Float", "Percent") and not isinstance(d[fieldname], float):
 					d[fieldname] = flt(d[fieldname])
 
-				elif df.fieldtype in ("Datetime", "Date") and d[fieldname]=="":
+				elif df.fieldtype in ("Datetime", "Date", "Time") and d[fieldname]=="":
 					d[fieldname] = None
 
 				elif df.get("unique") and cstr(d[fieldname]).strip()=="":
@@ -214,6 +224,9 @@ class BaseDocument(object):
 
 				if isinstance(d[fieldname], list) and df.fieldtype != 'Table':
 					frappe.throw(_('Value for {0} cannot be a list').format(_(df.label)))
+
+				if convert_dates_to_str and isinstance(d[fieldname], (datetime.datetime, datetime.time, datetime.timedelta)):
+					d[fieldname] = str(d[fieldname])
 
 		return d
 
@@ -244,20 +257,20 @@ class BaseDocument(object):
 	def is_new(self):
 		return self.get("__islocal")
 
-	def as_dict(self, no_nulls=False, no_default_fields=False):
-		doc = self.get_valid_dict()
+	def as_dict(self, no_nulls=False, no_default_fields=False, convert_dates_to_str=False):
+		doc = self.get_valid_dict(convert_dates_to_str=convert_dates_to_str)
 		doc["doctype"] = self.doctype
 		for df in self.meta.get_table_fields():
 			children = self.get(df.fieldname) or []
 			doc[df.fieldname] = [d.as_dict(no_nulls=no_nulls) for d in children]
 
 		if no_nulls:
-			for k in doc.keys():
+			for k in list(doc):
 				if doc[k] is None:
 					del doc[k]
 
 		if no_default_fields:
-			for k in doc.keys():
+			for k in list(doc):
 				if k in default_fields:
 					del doc[k]
 
@@ -287,9 +300,9 @@ class BaseDocument(object):
 			self.creation = self.modified = now()
 			self.created_by = self.modifield_by = frappe.session.user
 
-		d = self.get_valid_dict()
+		d = self.get_valid_dict(convert_dates_to_str=True)
 
-		columns = d.keys()
+		columns = list(d)
 		try:
 			frappe.db.sql("""insert into `tab{doctype}`
 				({columns}) values ({values})""".format(
@@ -316,7 +329,6 @@ class BaseDocument(object):
 					raise
 			else:
 				raise
-
 		self.set("__islocal", False)
 
 	def db_update(self):
@@ -324,13 +336,13 @@ class BaseDocument(object):
 			self.db_insert()
 			return
 
-		d = self.get_valid_dict()
+		d = self.get_valid_dict(convert_dates_to_str=True)
 
 		# don't update name, as case might've been changed
 		name = d['name']
 		del d['name']
 
-		columns = d.keys()
+		columns = list(d)
 
 		try:
 			frappe.db.sql("""update `tab{doctype}`
@@ -361,39 +373,6 @@ class BaseDocument(object):
 
 		# this is used to preserve traceback
 		raise frappe.UniqueValidationError(self.doctype, self.name, e)
-
-	def db_set(self, fieldname, value=None, update_modified=True):
-		'''Set a value in the document object, update the timestamp and update the database.
-
-		WARNING: This method does not trigger controller validations and should
-		be used very carefully.
-
-		:param fieldname: fieldname of the property to be updated, or a {"field":"value"} dictionary
-		:param value: value of the property to be updated
-		:param update_modified: default True. updates the `modified` and `modified_by` properties
-		'''
-		if isinstance(fieldname, dict):
-			self.update(fieldname)
-		else:
-			self.set(fieldname, value)
-
-		if update_modified and (self.doctype, self.name) not in frappe.flags.currently_saving:
-			# don't update modified timestamp if called from post save methods
-			# like on_update or on_submit
-			self.set("modified", now())
-			self.set("modified_by", frappe.session.user)
-
-		# to trigger email alert on value change
-		self.run_method('before_change')
-
-		frappe.db.set_value(self.doctype, self.name, fieldname, value,
-			self.modified, self.modified_by, update_modified=update_modified)
-
-		self.run_method('on_change')
-
-	def db_get(self, fieldname):
-		'''get database vale for this fieldname'''
-		return frappe.db.get_value(self.doctype, self.name, fieldname)
 
 	def update_modified(self):
 		'''Update modified timestamp'''
@@ -472,17 +451,17 @@ class BaseDocument(object):
 				# get a map of values ot fetch along with this link query
 				# that are mapped as link_fieldname.source_fieldname in Options of
 				# Readonly or Data or Text type fields
-				fields_to_fetch = [
-					_df for _df in self.meta.get_fields_to_fetch(df.fieldname)
-						 if not self.get(_df.fieldname)
-				]
+
+				# NOTE: All fields will be replaced, if you want manual changes to stay
+				# use `frm.add_fetch`
+				fields_to_fetch = self.meta.get_fields_to_fetch(df.fieldname)
 
 				if not fields_to_fetch:
 					# cache a single value type
 					values = frappe._dict(name=frappe.db.get_value(doctype, docname,
 						'name', cache=True))
 				else:
-					values_to_fetch = ['name'] + [_df.options.split('.')[-1]
+					values_to_fetch = ['name'] + [_df.fetch_from.split('.')[-1]
 						for _df in fields_to_fetch]
 
 					# don't cache if fetching other values too
@@ -492,21 +471,22 @@ class BaseDocument(object):
 				if frappe.get_meta(doctype).issingle:
 					values.name = doctype
 
-				setattr(self, df.fieldname, values.name)
+				if values:
+					setattr(self, df.fieldname, values.name)
 
-				for _df in fields_to_fetch:
-					setattr(self, _df.fieldname, values[_df.options.split('.')[-1]])
+					for _df in fields_to_fetch:
+						setattr(self, _df.fieldname, values[_df.fetch_from.split('.')[-1]])
 
-				notify_link_count(doctype, docname)
+					notify_link_count(doctype, docname)
 
-				if not values.name:
-					invalid_links.append((df.fieldname, docname, get_msg(df, docname)))
+					if not values.name:
+						invalid_links.append((df.fieldname, docname, get_msg(df, docname)))
 
-				elif (df.fieldname != "amended_from"
-					and (is_submittable or self.meta.is_submittable) and frappe.get_meta(doctype).is_submittable
-					and cint(frappe.db.get_value(doctype, docname, "docstatus"))==2):
+					elif (df.fieldname != "amended_from"
+						and (is_submittable or self.meta.is_submittable) and frappe.get_meta(doctype).is_submittable
+						and cint(frappe.db.get_value(doctype, docname, "docstatus"))==2):
 
-					cancelled_links.append((df.fieldname, docname, get_msg(df, docname)))
+						cancelled_links.append((df.fieldname, docname, get_msg(df, docname)))
 
 		return invalid_links, cancelled_links
 
@@ -561,6 +541,10 @@ class BaseDocument(object):
 
 	def _validate_length(self):
 		if frappe.flags.in_install:
+			return
+
+		if self.meta.issingle:
+			# single doctype value type is mediumtext
 			return
 
 		for fieldname, value in iteritems(self.get_valid_dict()):
@@ -644,10 +628,11 @@ class BaseDocument(object):
 
 	def _save_passwords(self):
 		'''Save password field values in __Auth table'''
-		if self.flags.ignore_save_passwords:
+		if self.flags.ignore_save_passwords is True:
 			return
 
 		for df in self.meta.get('fields', {'fieldtype': ('=', 'Password')}):
+			if self.flags.ignore_save_passwords and df.fieldname in self.flags.ignore_save_passwords: continue
 			new_password = self.get(df.fieldname)
 			if new_password and not self.is_dummy_password(new_password):
 				# is not a dummy password like '*****'
@@ -784,27 +769,8 @@ class BaseDocument(object):
 
 		return self.cast(val, df)
 
-	def cast(self, val, df):
-		if df.fieldtype in ("Currency", "Float", "Percent"):
-			val = flt(val)
-
-		elif df.fieldtype in ("Int", "Check"):
-			val = cint(val)
-
-		elif df.fieldtype in ("Data", "Text", "Small Text", "Long Text",
-			"Text Editor", "Select", "Link", "Dynamic Link"):
-				val = cstr(val)
-
-		elif df.fieldtype == "Date":
-			val = getdate(val)
-
-		elif df.fieldtype == "Datetime":
-			val = get_datetime(val)
-
-		elif df.fieldtype == "Time":
-			val = to_timedelta(val)
-
-		return val
+	def cast(self, value, df):
+		return cast_fieldtype(df.fieldtype, value)
 
 	def _extract_images_from_text_editor(self):
 		from frappe.utils.file_manager import extract_images_from_doc
@@ -819,6 +785,9 @@ def _filter(data, filters, limit=None):
 		"key" : True (exists), "key": False (does not exist) }"""
 
 	out, _filters = [], {}
+
+	if not data:
+		return out
 
 	# setup filters as tuples
 	if filters:

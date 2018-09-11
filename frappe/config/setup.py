@@ -17,6 +17,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Role",
 					"description": _("User Roles")
+				},
+				{
+					"type": "doctype",
+					"name": "Role Profile",
+					"description": _("Role Profile")
 				}
 			]
 		},
@@ -32,11 +37,11 @@ def get_data():
 					"description": _("Set Permissions on Document Types and Roles")
 				},
 				{
-					"type": "page",
-					"name": "modules_setup",
-					"label": _("Show / Hide Modules"),
-					"icon": "fa fa-upload",
-					"description": _("Show or hide modules globally.")
+					"type": "doctype",
+					"name": "User Permission",
+					"label": _("User Permissions"),
+					"icon": "fa fa-lock",
+					"description": _("Restrict user for specific document")
 				},
 				{
 					"type": "doctype",
@@ -81,6 +86,13 @@ def get_data():
 					"name": "Error Snapshot",
 					"description": _("Log of error during requests.")
 				},
+				{
+					"type": "doctype",
+					"name": "Domain Settings",
+					"label": _("Domain Settings"),
+					"description": _("Enable / Disable Domains"),
+					"hide_count": True
+				},
 			]
 		},
 		{
@@ -88,11 +100,18 @@ def get_data():
 			"icon": "fa fa-th",
 			"items": [
 				{
-					"type": "page",
-					"name": "data-import-tool",
-					"label": _("Import / Export Data"),
-					"icon": "fa fa-upload",
-					"description": _("Import / Export Data from .csv files.")
+					"type": "doctype",
+					"name": "Data Import",
+					"label": _("Import Data"),
+					"icon": "octicon octicon-cloud-upload",
+					"description": _("Import Data from CSV / Excel files.")
+				},
+				{
+					"type": "doctype",
+					"name": "Data Export",
+					"label": _("Export Data"),
+					"icon": "octicon octicon-cloud-upload",
+					"description": _("Export Data in CSV / Excel format.")
 				},
 				{
 					"type": "doctype",
@@ -145,13 +164,13 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Email Alert",
-					"description": _("Setup Email Alert based on various criteria.")
+					"name": "Notification",
+					"description": _("Setup Notifications based on various criteria.")
 				},
 				{
 					"type": "doctype",
-					"name": "Standard Reply",
-					"description": _("Standard replies to common queries.")
+					"name": "Email Template",
+					"description": _("Email Templates for common queries.")
 				},
 				{
 					"type": "doctype",

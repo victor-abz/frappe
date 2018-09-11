@@ -8,10 +8,38 @@ frappe.request.url = '/';
 frappe.request.ajax_count = 0;
 frappe.request.waiting_for_ajax = [];
 
-
+frappe.xcall = function(method, params) {
+	return new Promise((resolve, reject) => {
+		frappe.call({
+			method: method,
+			args: params,
+			callback: (r) => {
+				resolve(r.message);
+			},
+			error: (r) => {
+				reject(r.message);
+			}
+		});
+	});
+};
 
 // generic server call (call page, object)
 frappe.call = function(opts) {
+	if (!frappe.is_online()) {
+		frappe.show_alert({
+			indicator: 'orange',
+			message: __('You are not connected to Internet. Retry after sometime.')
+		}, 3);
+		return;
+	}
+	if (typeof arguments[0]==='string') {
+		opts = {
+			method: arguments[0],
+			args: arguments[1],
+			callback: arguments[2]
+		}
+	}
+
 	if(opts.quiet) {
 		opts.no_spinner = true;
 	}
@@ -139,6 +167,7 @@ frappe.request.call = function(opts) {
 			frappe.msgprint({message:__("Server Error: Please check your server logs or contact tech support."), title:__('Something went wrong'), indicator: 'red'});
 			try {
 				opts.error_callback && opts.error_callback();
+				frappe.request.report_error(xhr, opts);
 			} catch (e) {
 				frappe.request.report_error(xhr, opts);
 			}
@@ -155,7 +184,10 @@ frappe.request.call = function(opts) {
 		type: opts.type,
 		dataType: opts.dataType || 'json',
 		async: opts.async,
-		headers: { "X-Frappe-CSRF-Token": frappe.csrf_token },
+		headers: { 
+			"X-Frappe-CSRF-Token": frappe.csrf_token,
+			"Accept": "application/json"
+		},
 		cache: false
 	};
 
@@ -355,7 +387,7 @@ frappe.request.report_error = function(xhr, request_opts) {
 
 		request_opts = frappe.request.cleanup_request_opts(request_opts);
 
-		msg_dialog = frappe.msgprint({message:error_message, indicator:'red'});
+		window.msg_dialog = frappe.msgprint({message:error_message, indicator:'red'});
 
 		msg_dialog.msg_area.find(".report-btn")
 			.toggle(error_report_email ? true : false)

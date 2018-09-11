@@ -9,7 +9,7 @@ import pyotp, os
 from frappe.utils.background_jobs import enqueue
 from jinja2 import Template
 from pyqrcode import create as qrcreate
-from six import StringIO
+from six import BytesIO
 from base64 import b64encode, b32encode
 from frappe.utils import get_url, get_datetime, time_diff_in_seconds
 from six import iteritems, string_types
@@ -29,9 +29,14 @@ def two_factor_is_enabled(user=None):
 	if enabled:
 		bypass_two_factor_auth = int(frappe.db.get_value('System Settings', None, 'bypass_2fa_for_retricted_ip_users') or 0)
 		if bypass_two_factor_auth:
-			restrict_ip = frappe.db.get_value("User", filters={"name": user}, fieldname="restrict_ip")
-			if restrict_ip and bypass_two_factor_auth:
-				enabled = False
+			user_doc = frappe.get_doc("User", user)
+			restrict_ip_list = user_doc.get_restricted_ip_list() #can be None or one or more than one ip address
+			if restrict_ip_list:
+				for ip in restrict_ip_list:
+					if frappe.local.request_ip.startswith(ip):
+						enabled = False
+						break
+
 	if not user or not enabled:
 		return enabled
 	return two_factor_is_enabled_for_(user)
@@ -255,7 +260,6 @@ def get_link_for_qrcode(user, totp_uri):
 
 def send_token_via_sms(otpsecret, token=None, phone_no=None):
 	'''Send token as sms to user.'''
-	otp_issuer = frappe.db.get_value('System Settings', 'System Settings', 'otp_issuer_name')
 	try:
 		from frappe.core.doctype.sms_settings.sms_settings import send_request
 	except:
@@ -270,7 +274,6 @@ def send_token_via_sms(otpsecret, token=None, phone_no=None):
 
 	hotp = pyotp.HOTP(otpsecret)
 	args = {
-		ss.sms_sender_name: otp_issuer,
 		ss.message_parameter: 'Your verification code is {}'.format(hotp.at(int(token)))
 	}
 
@@ -281,10 +284,11 @@ def send_token_via_sms(otpsecret, token=None, phone_no=None):
 
 	sms_args = {
 		'params': args,
-		'gateway_url': ss.sms_gateway_url
+		'gateway_url': ss.sms_gateway_url,
+		'use_post': ss.use_post
 	}
 	enqueue(method=send_request, queue='short', timeout=300, event=None,
-		async=True, job_name=None, now=False, **sms_args)
+		is_async=True, job_name=None, now=False, **sms_args)
 	return True
 
 def send_token_via_email(user, token, otp_secret, otp_issuer, subject=None, message=None):
@@ -311,18 +315,18 @@ def send_token_via_email(user, token, otp_secret, otp_issuer, subject=None, mess
 	}
 
 	enqueue(method=frappe.sendmail, queue='short', timeout=300, event=None,
-		async=True, job_name=None, now=False, **email_args)
+		is_async=True, job_name=None, now=False, **email_args)
 	return True
 
 def get_qr_svg_code(totp_uri):
 	'''Get SVG code to display Qrcode for OTP.'''
 	url = qrcreate(totp_uri)
 	svg = ''
-	stream = StringIO()
+	stream = BytesIO()
 	try:
 		url.svg(stream, scale=4, background="#eee", module_color="#222")
-		svg = stream.getvalue().replace('\n', '')
-		svg = b64encode(bytes(svg))
+		svg = stream.getvalue().decode().replace('\n', '')
+		svg = b64encode(svg.encode())
 	finally:
 		stream.close()
 	return svg

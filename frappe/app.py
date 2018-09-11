@@ -4,7 +4,6 @@
 from __future__ import unicode_literals
 
 import os
-import MySQLdb
 from six import iteritems
 import logging
 
@@ -18,7 +17,6 @@ import frappe
 import frappe.handler
 import frappe.auth
 import frappe.api
-import frappe.async
 import frappe.utils.response
 import frappe.website.render
 from frappe.utils import get_site_name
@@ -26,6 +24,12 @@ from frappe.middlewares import StaticDataMiddleware
 from frappe.utils.error import make_error_snapshot
 from frappe.core.doctype.communication.comment import update_comments_in_parent_after_request
 from frappe import _
+
+# imports - third-party imports
+import pymysql
+from pymysql.constants import ER
+
+# imports - module imports
 
 local_manager = LocalManager([frappe.local])
 
@@ -116,8 +120,18 @@ def init_request(request):
 	frappe.local.http_request = frappe.auth.HTTPRequest()
 
 def make_form_dict(request):
-	frappe.local.form_dict = frappe._dict({ k:v[0] if isinstance(v, (list, tuple)) else v \
-		for k, v in iteritems(request.form or request.args) })
+	import json
+
+	if 'application/json' in (request.content_type or '') and request.data:
+		args = json.loads(request.data)
+	else:
+		args = request.form or request.args
+
+	try:
+		frappe.local.form_dict = frappe._dict({ k:v[0] if isinstance(v, (list, tuple)) else v \
+			for k, v in iteritems(args) })
+	except IndexError:
+		frappe.local.form_dict = frappe._dict(args)
 
 	if "_" in frappe.local.form_dict:
 		# _ is passed by $.ajax so that the request is not cached by the browser. So, remove _ from form_dict
@@ -128,17 +142,14 @@ def handle_exception(e):
 	http_status_code = getattr(e, "http_status_code", 500)
 	return_as_message = False
 
-	if frappe.local.is_ajax or 'application/json' in frappe.local.request.headers.get('Accept', ''):
+	if frappe.get_request_header('Accept') and (frappe.local.is_ajax or 'application/json' in frappe.get_request_header('Accept')):
 		# handle ajax responses first
 		# if the request is ajax, send back the trace or error message
 		response = frappe.utils.response.report_error(http_status_code)
 
 	elif (http_status_code==500
-		and isinstance(e, MySQLdb.OperationalError)
-		and e.args[0] in (1205, 1213)):
-			# 1205 = lock wait timeout
-			# 1213 = deadlock
-			# code 409 represents conflict
+		and isinstance(e, pymysql.InternalError)
+		and e.args[0] in (ER.LOCK_WAIT_TIMEOUT, ER.LOCK_DEADLOCK)):
 			http_status_code = 508
 
 	elif http_status_code==401:

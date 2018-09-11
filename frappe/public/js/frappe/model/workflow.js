@@ -32,17 +32,16 @@ frappe.workflow = {
 		});
 		return value;
 	},
-	get_transitions: function(doctype, state) {
-		frappe.workflow.setup(doctype);
-		return frappe.get_children(frappe.workflow.workflows[doctype], "transitions", {state:state});
+	get_transitions: function(doc) {
+		frappe.workflow.setup(doc.doctype);
+		return frappe.xcall('frappe.model.workflow.get_transitions', {doc: doc});
 	},
 	get_document_state: function(doctype, state) {
 		frappe.workflow.setup(doctype);
 		return frappe.get_children(frappe.workflow.workflows[doctype], "states", {state:state})[0];
 	},
-	get_next_state: function(doctype, state, action) {
-		return frappe.get_children(frappe.workflow.workflows[doctype], "transitions", {
-			state:state, action:action})[0].next_state;
+	is_self_approval_enabled: function(doctype) {
+		return frappe.workflow.workflows[doctype].allow_self_approval;
 	},
 	is_read_only: function(doctype, name) {
 		var state_fieldname = frappe.workflow.get_state_fieldname(doctype);
@@ -56,7 +55,7 @@ frappe.workflow = {
 			var state = doc[state_fieldname] ||
 				frappe.workflow.get_default_state(doctype, doc.docstatus);
 
-			var allow_edit = state ? frappe.workflow.get_document_state(doctype, state).allow_edit : null;
+			var allow_edit = state ? frappe.workflow.get_document_state(doctype, state) && frappe.workflow.get_document_state(doctype, state).allow_edit : null;
 
 			if(!frappe.user_roles.includes(allow_edit)) {
 				return true;
