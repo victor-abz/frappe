@@ -1,0 +1,30 @@
+@import "variables.less";
+@import (less) "trix/dist/trix.css";
+
+// trix editor
+trix-editor {
+	height: 400px;
+	overflow: auto;
+}
+trix-toolbar {
+	.trix-button-row {
+		justify-content: start;
+	}
+
+	.trix-button-group {
+		margin-right: 5px;
+	}
+
+	.trix-button {
+		color: @text-color;
+	}
+
+	.trix-button-group {
+		border-color: @border-color;
+	}
+}
+trix-editor {
+	progress {
+		display: none;
+	}
+}

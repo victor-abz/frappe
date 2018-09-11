@@ -211,6 +211,21 @@ frappe.dom = {
 	scroll_to_bottom(container) {
 		const $container = $(container);
 		$container.scrollTop($container[0].scrollHeight);
+	},
+	get_base64_from_file(file_object) {
+		return new Promise(resolve => {
+			const reader = new FileReader();
+
+			reader.onload = function() {
+				let dataurl = reader.result;
+				let parts = dataurl.split(",");
+				// add filename to dataurl
+				// parts[0] += ";filename=" + file_object.name;
+				// dataurl = parts[0] + ',' + parts[1];
+				resolve(dataurl);
+			};
+			reader.readAsDataURL(file_object);
+		});
 	}
 }
 

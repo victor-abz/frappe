@@ -92,7 +92,6 @@
 	],
 	"css/desk.min.css": [
 		"public/js/lib/summernote/summernote.css",
-		"public/js/lib/trix/trix.css",
 		"public/js/lib/leaflet/leaflet.css",
 		"public/js/lib/leaflet/leaflet.draw.css",
 		"public/js/lib/leaflet/L.Control.Locate.css",
@@ -126,7 +125,6 @@
 		"public/js/lib/Sortable.min.js",
 		"public/js/lib/jquery/jquery.hotkeys.js",
 		"public/js/lib/summernote/summernote.js",
-		"public/js/lib/trix/trix.js",
 		"public/js/lib/bootstrap.min.js",
 		"node_modules/moment/min/moment-with-locales.min.js",
 		"node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
@@ -246,7 +244,8 @@
 		"public/less/module.less"
 	],
 	"css/form.min.css": [
-		"public/less/form_grid.less"
+		"public/less/form_grid.less",
+		"public/less/trix.less"
 	],
 	"js/form.min.js": [
 		"public/js/frappe/form/templates/print_layout.html",

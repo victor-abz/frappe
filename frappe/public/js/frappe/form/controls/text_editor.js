@@ -1,30 +1,67 @@
+import 'trix';
+
 frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlText.extend({
-	html_element: "trix-editor",
+	html_element: 'trix-editor',
 	input_type: null,
-	make_input: function() {
+	make_input() {
 		this._super();
 		this.bind_trix_events();
 		this.$input.addClass('trix-content');
+		this.add_edit_html_dialog();
 	},
-	bind_change_event: function() {
-		var me = this;
-		this.$input && this.$input.on("trix-change", this.change || function(e) {
-			me.parse_validate_and_set_in_model(me.get_input_value(), e);
+	bind_change_event() {
+		this.$input && this.$input.on('trix-change', (e) => {
+			this.parse_validate_and_set_in_model(this.get_input_value(), e);
 		});
 	},
-	get_input_value: function() {
+	get_input_value() {
 		return this.$hidden_input ? this.$hidden_input.val() : undefined;
 	},
-	bind_trix_events: function() {
+	bind_trix_events() {
 		this.trix_initialized = new Promise(resolve => {
 			this.$input.on('trix-initialize', (e) => {
 				this.trix_editor = this.input.editor;
 				this.$hidden_input = $(this.input.inputElement);
 				resolve();
 			});
+
+			this.$input.on('trix-attachment-add', (e) => {
+				console.log(e);
+				const attachment = e.originalEvent.attachment;
+				frappe.dom.get_base64_from_file(attachment.file)
+					.then((base64) => {
+						return attachment.setAttributes({
+							url: base64
+						});
+					})
+
+			})
 		});
 	},
-	set_formatted_input: function(value) {
+	add_edit_html_dialog() {
+		const $edit_button = $(`<button class="btn btn-xs btn-default">${__('Edit')}</button>`);
+		this.$input.after($edit_button);
+
+		$edit_button.click(() => {
+			const d = new frappe.ui.Dialog({
+				title: __('Edit HTML'),
+				fields: [{
+					label: this.df.label,
+					fieldname: 'html',
+					fieldtype: 'Code'
+				}],
+				primary_action_label: __('Update'),
+				primary_action: ({ html }) => {
+					this.parse_validate_and_set_in_model(html);
+					d.hide();
+				}
+			});
+
+			d.set_value('html', this.get_input_value());
+			d.show();
+		});
+	},
+	set_formatted_input(value) {
 		if (!value) value = '';
 
 		this.trix_initialized.then(() => {
@@ -32,7 +69,7 @@ frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlText.extend({
 			this.trix_editor.loadHTML(value)
 		});
 	},
-	parse: function(value) {
+	parse(value) {
 		if(value == null) value = "";
 		return frappe.dom.remove_script_and_style(value);
 	}
