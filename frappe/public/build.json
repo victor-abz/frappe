@@ -380,5 +380,8 @@
 	],
 	"js/social.min.js": [
 		"public/js/frappe/social/social_home.js"
+	],
+	"css/tailwind.css": [
+		"public/css/tailwind.css"
 	]
 }

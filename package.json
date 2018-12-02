@@ -48,6 +48,7 @@
     "rollup-plugin-postcss": "^1.4.0",
     "rollup-plugin-uglify": "^3.0.0",
     "rollup-plugin-vue": "^4.3.2",
+    "tailwindcss": "^0.7.2",
     "vue-template-compiler": "^2.5.17"
   }
 }

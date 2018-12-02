@@ -11,6 +11,7 @@ const buble = require('rollup-plugin-buble');
 const uglify = require('rollup-plugin-uglify');
 const vue = require('rollup-plugin-vue');
 const frappe_html = require('./frappe-html-plugin');
+const tailwindcss = require('tailwindcss');
 
 const production = process.env.FRAPPE_ENV === 'production';
 
@@ -114,6 +115,9 @@ function get_rollup_options_for_css(output_file, input_files) {
 		multi_entry(),
 		// less -> css
 		postcss({
+			plugins: [
+				tailwindcss('./tailwind.js'),
+			],
 			extract: output_path,
 			use: [['less', {
 				// import other less/css files starting from these folders
