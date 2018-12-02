@@ -1,0 +1,13 @@
+{% extends "templates/web.html" %}
+
+{%- block head_include %}
+<link rel="stylesheet" href="/assets/css/tailwind.css">
+{% endblock -%}
+{% block body  %}
+<div class="container">
+    <h1>Tailwind setup</h1>
+    <button class="bg-indigo text-white px-4 py-3 rounded focus:outline-none focus:shadow-outline">
+        Button
+    </button>
+</div>
+{% endblock body %}
