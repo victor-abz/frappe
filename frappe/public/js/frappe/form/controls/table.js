@@ -87,7 +87,7 @@ frappe.ui.form.ControlTable = frappe.ui.form.Control.extend({
 			});
 			frappe.hide_progress();
 			return false; // Prevent the default handler from running.
-		})		
+		})
 	},
 	refresh_input: function() {
 		this.grid.refresh();
@@ -98,7 +98,7 @@ frappe.ui.form.ControlTable = frappe.ui.form.Control.extend({
 		}
 	},
 	set_input: function( ) {
-		//
+		console.log(arguments)
 	},
 	validate: function() {
 		return true
