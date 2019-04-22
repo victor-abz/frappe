@@ -1,4 +1,5 @@
 import Quill from 'quill';
+import './text_editor_tiptap';
 
 // replace <p> tag with <div>
 const Block = Quill.import('blots/block');
@@ -54,7 +55,7 @@ Quill.register(FontStyle, true);
 Quill.register(AlignStyle, true);
 Quill.register(DirectionStyle, true);
 
-frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlCode.extend({
+frappe.ui.form.ControlTextEditor2 = frappe.ui.form.ControlCode.extend({
 	make_wrapper() {
 		this._super();
 		this.$wrapper.find(".like-disabled-input").addClass('text-editor-print');
