@@ -73,7 +73,7 @@ function get_rollup_options_for_js(output_file, input_files) {
 			input: input_files,
 			plugins: plugins,
 			context: 'window',
-			external: ['jquery'],
+			external: ['jquery', 'vue'],
 			onwarn({ code, message, loc, frame }) {
 				// skip warnings
 				if (['EVAL', 'SOURCEMAP_BROKEN', 'NAMESPACE_CONFLICT'].includes(code)) return;
@@ -99,7 +99,8 @@ function get_rollup_options_for_js(output_file, input_files) {
 			format: 'iife',
 			name: 'Rollup',
 			globals: {
-				'jquery': 'window.jQuery'
+				'jquery': 'window.jQuery',
+				'vue': 'window.Vue'
 			},
 			sourcemap: true
 		}

@@ -11,6 +11,7 @@ import MenuBar from './MenuBar.vue';
 import extensions from './extensions';
 
 export default {
+	mixins: [extensions],
 	components: {
 		EditorContent,
 		EditorMenuBar,
@@ -24,7 +25,7 @@ export default {
 	mounted() {
 		this.editor = new Editor({
 			content: '',
-			extensions,
+			extensions: this.get_extensions(),
 			onUpdate: ({ getHTML }) => {
 				this.$emit('change', getHTML());
 			}
