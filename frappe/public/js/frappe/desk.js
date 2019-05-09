@@ -112,9 +112,7 @@ frappe.Application = Class.extend({
 		});
 
 		this.setup_social_listeners();
-
-		// listen to build errors
-		this.setup_build_error_listener();
+		this.setup_asset_listener();
 
 		if (frappe.sys_defaults.email_user_password){
 			var email_list =  frappe.sys_defaults.email_user_password.split(',');
@@ -541,10 +539,15 @@ frappe.Application = Class.extend({
 		}
 	},
 
-	setup_build_error_listener() {
+	setup_asset_listener() {
 		if (frappe.boot.developer_mode) {
 			frappe.realtime.on('build_error', (data) => {
 				console.log(data);
+			});
+		}
+		if (frappe.boot.notify_asset_changes) {
+			frappe.realtime.on('build_change', (data) => {
+				frappe.show_alert(data);
 			});
 		}
 	},

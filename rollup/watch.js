@@ -32,8 +32,10 @@ function watch_assets() {
 
 			case 'BUNDLE_START': {
 				const output = event.output[0];
-				if (output.endsWith('.js') || output.endsWith('.vue')) {
-					log('Rebuilding', path.basename(event.output[0]));
+				if (output.endsWith('.js')) {
+					let message = 'Rebuilding ' + path.basename(event.output[0]);
+					publish_via_redis('build_change', message);
+					log(message);
 				}
 				break;
 			}
@@ -84,15 +86,17 @@ function log_error(error) {
 	}
 
 	// notify redis which in turns tells socketio to publish this to browser
-	const payload = {
-		event: 'build_error',
-		message: `
+	publish_via_redis('build_error', `
 Error in: ${error.id}
 ${error.toString()}
 
 ${error.frame ? error.frame : ''}
-		`
-	};
+	`.trim());
+}
 
-	subscriber.publish('events', JSON.stringify(payload));
+function publish_via_redis(event, message) {
+	subscriber.publish('events', JSON.stringify({
+		event,
+		message
+	}));
 }
