@@ -1,221 +1,166 @@
 <template>
 	<EditorMenuBar :editor="editor">
-      <div class="menubar" slot-scope="{ commands, isActive }">
+		<div class="menubar" slot-scope="{ commands, isActive }">
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.bold() }"
-          @click="commands.bold"
-        >
-          <icon name="bold" />
-        </button>
+		<MenuButton
+			name="bold"
+			:class="{ 'active': isActive.bold() }"
+			@click.native="commands.bold"
+		/>
+		<MenuButton
+			name="italic"
+			:class="{ 'active': isActive.italic() }"
+			@click.native="commands.italic"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.italic() }"
-          @click="commands.italic"
-        >
-          <icon name="italic" />
-        </button>
+		<MenuButton
+			name="strike"
+			:class="{ 'active': isActive.strike() }"
+			@click.native="commands.strike"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.strike() }"
-          @click="commands.strike"
-        >
-          <icon name="strike" />
-        </button>
+		<MenuButton
+			name="underline"
+			:class="{ 'active': isActive.underline() }"
+			@click.native="commands.underline"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.underline() }"
-          @click="commands.underline"
-        >
-          <icon name="underline" />
-        </button>
+		<MenuButton
+			name="code"
+			:class="{ 'active': isActive.code() }"
+			@click.native="commands.code"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.code() }"
-          @click="commands.code"
-        >
-          <icon name="code" />
-        </button>
+		<MenuButton
+			name="paragraph"
+			:class="{ 'active': isActive.paragraph() }"
+			@click.native="commands.paragraph"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.paragraph() }"
-          @click="commands.paragraph"
-        >
-          <icon name="paragraph" />
-        </button>
+		<MenuButton
+			name="heading1"
+			:class="{ 'active': isActive.heading({ level: 1 }) }"
+			@click.native="commands.heading({ level: 1 })"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.heading({ level: 1 }) }"
-          @click="commands.heading({ level: 1 })"
-        >
-          H1
-        </button>
+		<MenuButton
+			name="heading2"
+			:class="{ 'active': isActive.heading({ level: 2 }) }"
+			@click.native="commands.heading({ level: 2 })"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.heading({ level: 2 }) }"
-          @click="commands.heading({ level: 2 })"
-        >
-          H2
-        </button>
+		<MenuButton
+			name="heading3"
+			:class="{ 'active': isActive.heading({ level: 3 }) }"
+			@click.native="commands.heading({ level: 3 })"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.heading({ level: 3 }) }"
-          @click="commands.heading({ level: 3 })"
-        >
-          H3
-        </button>
+		<MenuButton
+			name="ul"
+			:class="{ 'active': isActive.bullet_list() }"
+			@click.native="commands.bullet_list"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.bullet_list() }"
-          @click="commands.bullet_list"
-        >
-          <icon name="ul" />
-        </button>
+		<MenuButton
+			name="ol"
+			:class="{ 'active': isActive.ordered_list() }"
+			@click.native="commands.ordered_list"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.ordered_list() }"
-          @click="commands.ordered_list"
-        >
-          <icon name="ol" />
-        </button>
+		<MenuButton
+			name="quote"
+			:class="{ 'active': isActive.blockquote() }"
+			@click.native="commands.blockquote"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.blockquote() }"
-          @click="commands.blockquote"
-        >
-          <icon name="quote" />
-        </button>
+		<MenuButton
+			name="code"
+			:class="{ 'active': isActive.code_block() }"
+			@click.native="commands.code_block"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.code_block() }"
-          @click="commands.code_block"
-        >
-          <icon name="code" />
-        </button>
+		<MenuButton
+			name="hr"
+			@click.native="commands.horizontal_rule"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          @click="commands.horizontal_rule"
-        >
-          <icon name="hr" />
-        </button>
+		<MenuButton
+			name="undo"
+			@click.native="commands.undo"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          @click="commands.undo"
-        >
-          <icon name="undo" />
-        </button>
+		<MenuButton
+			name="redo"
+			@click.native="commands.redo"
+		/>
 
-        <button
-          class="btn btn-default btn-xs"
-          @click="commands.redo"
-        >
-          <icon name="redo" />
-        </button>
+		<MenuButton
+			name="image"
+			@click.native="showImagePrompt(commands.image)"
+		/>
 
-		<button
-          class="btn btn-default btn-xs"
-          @click="showImagePrompt(commands.image)"
-        >
-          <icon name="image" />
-        </button>
+		<MenuButton
+			name="checklist"
+			:class="{ 'active': isActive.todo_list() }"
+			@click.native="commands.todo_list"
+		/>
 
-		<button
-          class="btn btn-default btn-xs"
-          :class="{ 'active': isActive.todo_list() }"
-          @click="commands.todo_list"
-        >
-          <icon name="checklist" />
-        </button>
-
-		<button
-			class="btn btn-default btn-xs"
-			@click="commands.createTable({rowsCount: 3, colsCount: 3, withHeaderRow: false })"
-		>
-			<icon name="table" />
-		</button>
+		<MenuButton
+			name="table"
+			@click.native="commands.createTable({rowsCount: 3, colsCount: 3, withHeaderRow: true })"
+		/>
 
 		<span v-if="isActive.table()">
-			<button
-				class="btn btn-default btn-xs"
-				@click="commands.deleteTable"
-			>
-				<icon name="delete_table" />
-			</button>
-			<button
-				class="btn btn-default btn-xs"
-				@click="commands.addColumnBefore"
-			>
-				<icon name="add_col_before" />
-			</button>
-			<button
-				class="btn btn-default btn-xs"
-				@click="commands.addColumnAfter"
-			>
-				<icon name="add_col_after" />
-			</button>
-			<button
-				class="btn btn-default btn-xs"
-				@click="commands.deleteColumn"
-			>
-				<icon name="delete_col" />
-			</button>
-			<button
-				class="btn btn-default btn-xs"
-				@click="commands.addRowBefore"
-			>
-				<icon name="add_row_before" />
-			</button>
-			<button
-				class="btn btn-default btn-xs"
-				@click="commands.addRowAfter"
-			>
-				<icon name="add_row_after" />
-			</button>
-			<button
-				class="btn btn-default btn-xs"
-				@click="commands.deleteRow"
-			>
-				<icon name="delete_row" />
-			</button>
-			<button
-				class="btn btn-default btn-xs"
-				@click="commands.toggleCellMerge"
-			>
-				<icon name="combine_cells" />
-			</button>
+			<MenuButton
+				name="delete_table"
+				@click.native="commands.deleteTable"
+			/>
+			<MenuButton
+				name="add_col_before"
+				@click.native="commands.addColumnBefore"
+			/>
+			<MenuButton
+				name="add_col_after"
+				@click.native="commands.addColumnAfter"
+			/>
+			<MenuButton
+				name="delete_col"
+				@click.native="commands.deleteColumn"
+			/>
+			<MenuButton
+				name="add_row_before"
+				@click.native="commands.addRowBefore"
+			/>
+			<MenuButton
+				name="add_row_after"
+				@click.native="commands.addRowAfter"
+			/>
+			<MenuButton
+				name="delete_row"
+				@click.native="commands.deleteRow"
+			/>
+			<MenuButton
+				name="combine_cells"
+				@click.native="commands.toggleCellMerge"
+			/>
 		</span>
-      </div>
-    </EditorMenuBar>
+		</div>
+	</EditorMenuBar>
 </template>
 
 <script>
 import { EditorMenuBar } from 'tiptap';
-import Icon from './Icon.vue';
+import MenuButton from './MenuButton.vue';
 
 export default {
 	name: 'MenuBar',
 	props: ['editor'],
 	components: {
 		EditorMenuBar,
-		Icon
+		MenuButton
 	},
 	methods: {
-    	showImagePrompt(command) {
+		showImagePrompt(command) {
 			let uploader = new frappe.ui.FileUploader({
 				allow_multiple: false,
 				restrictions: {
@@ -236,7 +181,7 @@ export default {
 @import "frappe/public/less/variables";
 
 .menubar {
-	padding: 8px 12px;
+	padding: 8px;
 	border-bottom: 1px solid @border-color;
 }
 
