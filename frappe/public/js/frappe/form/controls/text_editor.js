@@ -199,7 +199,13 @@ frappe.ui.form.ControlTextEditor = frappe.ui.form.ControlCode.extend({
 			$parent.replaceWith($ul);
 		});
 		value = this.convertLists($value.html());
-		return value;
+
+		let stripped_value = strip_html(value);
+		if (stripped_value) {
+			return value;
+		} else {
+			return '';
+		}
 	},
 
 	// hack
