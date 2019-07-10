@@ -634,7 +634,10 @@ frappe.views.CommunicationComposer = Class.extend({
 			// saved draft in localStorage
 			const { doctype, docname } = this.frm || {};
 			if (doctype && docname) {
-				this.message = localStorage.getItem(doctype + docname) || '';
+				let saved_value = localStorage.getItem(doctype + docname);
+				if (frappe.utils.html2text(saved_value)) {
+					this.message = saved_value || '';
+				}
 			}
 		}
 
