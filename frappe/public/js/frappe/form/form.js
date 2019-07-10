@@ -1265,6 +1265,15 @@ frappe.ui.form.Form = class FrappeForm {
 		return selected;
 	}
 
+	get_child_methods(cdt, cdn) {
+		return {
+			doc: frappe.get_doc(cdt, cdn),
+			set_value(field, value) {
+				return frappe.model.set_value(cdt, cdn, field, value);
+			}
+		}
+	}
+
 	set_indicator_formatter(fieldname, get_color, get_text) {
 		// get doctype from parent
 		var doctype;

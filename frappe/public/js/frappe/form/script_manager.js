@@ -87,7 +87,11 @@ frappe.ui.form.ScriptManager = Class.extend({
 				_promise = me.frm.cscript[_function](me.frm.doc, doctype, name);
 			} else {
 				// new style (frm, doctype, name)
-				_promise = _function(me.frm, doctype, name);
+				let row = {};
+				if (doctype && name) {
+					row = me.frm.get_child_methods(doctype, name);
+				}
+				_promise = _function(me.frm, doctype, name, row);
 			}
 
 			// if the trigger returns a promise, return it,
