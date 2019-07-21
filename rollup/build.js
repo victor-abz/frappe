@@ -76,6 +76,7 @@ function build(inputOptions, outputOptions) {
 }
 
 function concatenate_files() {
+	if (!(build_for_app == null || build_for_app === 'frappe')) return;
 	// only concatenates files, not processed through rollup
 
 	const files_to_concat = Object.keys(get_build_json('frappe'))
