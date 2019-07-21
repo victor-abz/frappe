@@ -106,27 +106,18 @@
 		"public/less/print.less"
 	],
 	"concat:js/libs.min.js": [
-		"public/js/lib/awesomplete/awesomplete.min.js",
 		"public/js/lib/Sortable.min.js",
-		"public/js/lib/jquery/jquery.hotkeys.js",
 		"public/js/lib/bootstrap.min.js",
 		"node_modules/vue/dist/vue.js",
 		"node_modules/moment/min/moment-with-locales.min.js",
 		"node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
-		"public/js/lib/socket.io.min.js",
-		"public/js/lib/jSignature.min.js",
-		"public/js/frappe/translate.js",
-		"public/js/lib/datepicker/datepicker.min.js",
-		"public/js/lib/datepicker/locale-all.js",
-		"public/js/lib/leaflet/leaflet.js",
-		"public/js/lib/leaflet/leaflet.draw.js",
-		"public/js/lib/leaflet/L.Control.Locate.js",
-		"public/js/lib/leaflet/easy-button.js"
+		"public/js/lib/socket.io.min.js"
 	],
 	"js/desk.min.js": [
 		"public/js/frappe/class.js",
 		"public/js/frappe/polyfill.js",
-		"public/js/frappe/provide.js",
+        "public/js/frappe/provide.js",
+        "public/js/frappe/translate.js",
 		"public/js/frappe/assets.js",
 		"public/js/frappe/format.js",
 		"public/js/frappe/form/formatters.js",

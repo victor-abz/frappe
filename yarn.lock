@@ -210,6 +210,12 @@ after@0.8.2:
   resolved "https://registry.yarnpkg.com/after/-/after-0.8.2.tgz#fedb394f9f0e02aa9768e702bda23b505fae7e1f"
   integrity sha1-/ts5T58OAqqXaOcCvaI7UF+ufh8=
 
+air-datepicker@frappe/air-datepicker:
+  version "2.2.3"
+  resolved "https://codeload.github.com/frappe/air-datepicker/tar.gz/ed37b94d95c68d8544357e330be0c89d044a3eea"
+  dependencies:
+    jquery ">=2.0.0 <4.0.0"
+
 ajv@^5.1.0:
   version "5.5.2"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.5.2.tgz#73b5eeca3fab653e3d3f9422b341ad42205dc965"
@@ -2502,6 +2508,11 @@ jest-worker@^24.0.0:
   dependencies:
     merge-stream "^1.0.1"
     supports-color "^6.1.0"
+
+"jquery@>=2.0.0 <4.0.0":
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
+  integrity sha512-36+AdBzCL+y6qjw5Tx7HgzeGCzC81MDDgaUP8ld2zhx58HdqXGoBd+tHdrBMiyjGQs0Hxs/MLZTu/eHNJJuWPw==
 
 js-base64@^2.1.8, js-base64@^2.1.9:
   version "2.5.1"

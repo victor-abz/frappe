@@ -3,27 +3,29 @@ frappe.ui.form.ControlSignature = frappe.ui.form.ControlData.extend({
 	loading: false,
 	make: function() {
 		var me = this;
-		this._super();
+        this._super();
 
-		// make jSignature field
-		this.body = $('<div class="signature-field"></div>').appendTo(me.wrapper);
+        this.require_lib()
+            .then(() => {
+                // make jSignature field
+                this.body = $('<div class="signature-field"></div>').appendTo(me.wrapper);
 
-		if (this.body.is(':visible')) {
-			this.make_pad();
-		} else {
-			$(document).on('frappe.ui.Dialog:shown', () => {
-				this.make_pad();
-			});
-		}
+                if (this.body.is(':visible')) {
+                    this.make_pad();
+                } else {
+                    $(document).on('frappe.ui.Dialog:shown', () => {
+                        this.make_pad();
+                    });
+                }
 
-		this.img_wrapper = $(`<div class="signature-display">
-			<div class="missing-image attach-missing-image">
-				<i class="octicon octicon-circle-slash"></i>
-			</div></div>`)
-			.appendTo(this.wrapper);
-		this.img = $("<img class='img-responsive attach-image-display'>")
-			.appendTo(this.img_wrapper).toggle(false);
-
+                this.img_wrapper = $(`<div class="signature-display">
+                    <div class="missing-image attach-missing-image">
+                        <i class="octicon octicon-circle-slash"></i>
+                    </div></div>`)
+                    .appendTo(this.wrapper);
+                this.img = $("<img class='img-responsive attach-image-display'>")
+                    .appendTo(this.img_wrapper).toggle(false);
+            });
 	},
 	make_pad: function() {
 		let width = this.body.width();
@@ -123,5 +125,8 @@ frappe.ui.form.ControlSignature = frappe.ui.form.ControlData.extend({
 		var base64_img = this.$pad.jSignature("getData");
 		this.set_my_value(base64_img);
 		this.set_image(this.get_value());
-	}
+    },
+    require_lib() {
+        return frappe.require('/assets/js/lib/jSignature.min.js')
+    }
 });

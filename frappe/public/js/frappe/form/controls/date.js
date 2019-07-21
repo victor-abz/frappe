@@ -1,4 +1,5 @@
-
+import 'air-datepicker/dist/js/datepicker.min';
+import '../../../lib/datepicker/locale-all';
 
 frappe.ui.form.ControlDate = frappe.ui.form.ControlData.extend({
 	make_input: function() {

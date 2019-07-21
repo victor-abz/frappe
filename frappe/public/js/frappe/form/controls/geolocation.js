@@ -1,25 +1,28 @@
 frappe.ui.form.ControlGeolocation = frappe.ui.form.ControlCode.extend({
 	make_wrapper() {
 		// Create the elements for map area
-		this._super();
+        this._super();
 
-		let $input_wrapper = this.$wrapper.find('.control-input-wrapper');
-		this.map_id = frappe.dom.get_unique_id();
-		this.map_area = $(
-			`<div class="map-wrapper border">
-				<div id="` + this.map_id + `" style="min-height: 400px; z-index: 1; max-width:100%"></div>
-			</div>`
-		);
-		this.map_area.prependTo($input_wrapper);
-		this.$wrapper.find('.control-input').addClass("hidden");
+        this.require_lib()
+            .then(() => {
+                let $input_wrapper = this.$wrapper.find('.control-input-wrapper');
+                this.map_id = frappe.dom.get_unique_id();
+                this.map_area = $(
+                    `<div class="map-wrapper border">
+                        <div id="` + this.map_id + `" style="min-height: 400px; z-index: 1; max-width:100%"></div>
+                    </div>`
+                );
+                this.map_area.prependTo($input_wrapper);
+                this.$wrapper.find('.control-input').addClass("hidden");
 
-		if ($input_wrapper.is(':visible')) {
-			this.make_map();
-		} else {
-			$(document).on('frappe.ui.Dialog:shown', () => {
-				this.make_map();
-			});
-		}
+                if ($input_wrapper.is(':visible')) {
+                    this.make_map();
+                } else {
+                    $(document).on('frappe.ui.Dialog:shown', () => {
+                        this.make_map();
+                    });
+                }
+            });
 	},
 
 	make_map() {
@@ -191,5 +194,14 @@ frappe.ui.form.ControlGeolocation = frappe.ui.form.ControlCode.extend({
 		this.editableLayers.eachLayer((l)=>{
 			this.editableLayers.removeLayer(l);
 		});
-	}
+    },
+
+    require_lib() {
+        return frappe.require([
+            "/assets/frappe/js/lib/leaflet/leaflet.js",
+            "/assets/frappe/js/lib/leaflet/leaflet.draw.js",
+            "/assets/frappe/js/lib/leaflet/L.Control.Locate.js",
+            "/assets/frappe/js/lib/leaflet/easy-button.js"
+        ]);
+    }
 });

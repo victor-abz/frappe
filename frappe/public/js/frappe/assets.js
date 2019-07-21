@@ -8,8 +8,14 @@
 frappe.require = function(items, callback) {
 	if(typeof items === "string") {
 		items = [items];
-	}
-	frappe.assets.execute(items, callback);
+    }
+
+    return new Promise(resolve => {
+        frappe.assets.execute(items, () => {
+            callback && callback();
+            resolve();
+        });
+    })
 };
 
 frappe.assets = {
