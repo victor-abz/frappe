@@ -18,10 +18,13 @@ const {
 } = require('./config');
 
 const build_for_app = process.argv[2] === '--app' ? process.argv[3] : null;
+const only_concat = process.argv.includes('--concat');
 
 show_production_message();
 ensure_js_css_dirs();
 concatenate_files();
+if (only_concat) return;
+
 create_build_file();
 
 if (build_for_app) {
@@ -48,7 +51,7 @@ function build_assets(app) {
 	const promises = options.map(({ inputOptions, outputOptions, output_file}) => {
 		return build(inputOptions, outputOptions)
 			.then(() => {
-				log(`${chalk.green('✔')} Built ${output_file}`);
+				log_built_message(output_file);
 			});
 	});
 
@@ -93,7 +96,7 @@ function concatenate_files() {
 		const output_file_path = output_file.slice('concat:'.length);
 		const target_path = path.resolve(assets_path, output_file_path);
 		fs.writeFileSync(target_path, file_content);
-		log(`${chalk.green('✔')} Built ${output_file_path}`);
+		log_built_message(output_file_path);
 	});
 }
 
@@ -107,14 +110,36 @@ function ensure_js_css_dirs() {
 		path.resolve(assets_path, 'js'),
 		path.resolve(assets_path, 'css')
 	];
-	paths.forEach(path => {
-		if (!fs.existsSync(path)) {
-			fs.mkdirSync(path);
-		}
-	});
+	paths.forEach(ensure_dir);
+}
+
+function ensure_dir(path) {
+	if (!fs.existsSync(path)) {
+		fs.mkdirSync(path);
+	}
 }
 
 function show_production_message() {
 	const production = process.env.FRAPPE_ENV === 'production';
 	log(chalk.yellow(`${production ? 'Production' : 'Development'} mode`));
+}
+
+function log_built_message(output_file) {
+	let full_path = path.resolve(assets_path, output_file);
+	const stats = fs.statSync(full_path);
+	const fileSizeInBytes = stats.size;
+	const fileSizeInKilobytes = fileSizeInBytes / 1000.0;
+	log(`${chalk.green('✔')} Built ${pad_string(output_file, 30, true)} - ${pad_string(fileSizeInKilobytes, 10)} Kb`);
+}
+
+function pad_string(str, max_length, right=false) {
+	str = String(str);
+	if (str.length < max_length) {
+		let left = max_length - str.length;
+		if (!right)
+			str = ' '.repeat(left) + str;
+		else
+			str += ' '.repeat(left);
+	}
+	return str;
 }
