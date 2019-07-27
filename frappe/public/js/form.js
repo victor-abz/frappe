@@ -1,0 +1,15 @@
+import './frappe/form/templates/print_layout.html';
+import './frappe/form/templates/users_in_sidebar.html';
+import './frappe/form/templates/set_sharing.html';
+import './frappe/form/templates/form_sidebar.html';
+import './frappe/form/templates/form_dashboard.html';
+import './frappe/form/templates/form_links.html';
+import './frappe/form/templates/report_links.html';
+import './frappe/form/templates/attachment.html';
+import './frappe/form/templates/form_footer.html';
+import './frappe/form/templates/timeline.html';
+import './frappe/form/templates/timeline_item.html';
+import './frappe/form/controls/control';
+import './frappe/views/formview';
+import './frappe/form/form';
+import './frappe/meta_tag';

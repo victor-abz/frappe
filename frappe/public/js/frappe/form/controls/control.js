@@ -1,3 +1,4 @@
+import "../../ui/capture";
 import './base_control';
 import './base_input';
 import './data';
