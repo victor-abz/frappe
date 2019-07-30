@@ -23,24 +23,27 @@ import {
 	TableRow,
 	Mention
 } from 'tiptap-extensions';
-import TableNodes from 'tiptap-extensions/src/nodes/TableNodes';
 
-TableNodes.table.toDOM = function toDOM() {
-	return ["table", { class: 'table table-bordered' }, ["tbody", 0]]
+import {
+	tableEditing,
+	columnResizing,
+} from 'prosemirror-tables'
+
+import { TableView } from 'prosemirror-tables/src/tableview';
+
+class TableViewClass extends TableView {
+	constructor(node, cellMinWidth) {
+		super(node, cellMinWidth);
+		this.table.className = 'table table-bordered table-fixed';
+	}
 }
-TableNodes.table.parseDOM = [{ tag: 'table.table.table-bordered' }]
 
 class TableWithClass extends Table {
-	get schema() {
-		console.log(TableNodes.table)
-		return Object.assign({}, TableNodes.table, {
-			toDOM: function toDOM() {
-				return ["table", { class: 'table table-bordered' }, ["tbody", 0]]
-			},
-			parseDOM: [
-				{ tag: 'table.table.table-bordered' }
-			]
-		})
+	get plugins() {
+		return [
+			columnResizing({ View: TableViewClass }),
+			tableEditing(),
+		]
 	}
 }
 
@@ -76,8 +79,8 @@ export default {
 				new Underline(),
 				new History(),
 				new Image(),
-				new Table(),
-				// new TableWithClass(),
+				// new Table(),
+				new TableWithClass(),
 				new TableHeader(),
 				new TableCell(),
 				new TableRow(),
