@@ -282,12 +282,14 @@ export default {
 			if (this.as_dataurl) {
 				return this.return_as_dataurl();
 			}
-			return frappe.run_serially(
-				this.files.map(
-					(file, i) =>
-						() => this.upload_file(file, i)
-				)
-			);
+
+			let promise = Promise.resolve();
+			this.files.forEach((file, i) => {
+				promise = promise.then(() => {
+					return this.upload_file(file, i)
+				});
+			});
+			return promise;
 		},
 		upload_via_file_browser() {
 			let selected_file = this.$refs.file_browser.selected_node;

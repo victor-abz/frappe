@@ -72,7 +72,8 @@ class File(NestedSet):
 			self.name = frappe.generate_hash("", 10)
 
 	def after_insert(self):
-		self.update_parent_folder_size()
+		frappe.enqueue_doc(self.doctype, self.name, 'update_parent_folder_size')
+		# self.update_parent_folder_size()
 
 		if not self.is_folder:
 			self.add_comment_in_reference_doc('Attachment',
