@@ -1,11 +1,11 @@
-@import "variables";
-@import "frappe/public/css/font-awesome";
 @import "~bootstrap/scss/bootstrap";
+@import "frappe/public/css/font-awesome";
 @import "multilevel-dropdown";
 @import "website-image";
 
 body {
-	font-size: 16px;
+    font-smoothing: antialiased;
+	-webkit-font-smoothing: antialiased;
 }
 
 .navbar.bg-dark {
@@ -144,4 +144,24 @@ h5.modal-title {
 
 .pull-right {
 	float: right;
+}
+
+// section styles
+.section {
+    padding: $section-padding;
+}
+
+
+
+h1 {
+    letter-spacing: -1px;
+    font-weight: 800;
+}
+
+h4 {
+    font-weight: 600;
+}
+
+.btn-primary {
+    background-color: theme-color('primary');
 }

@@ -12,12 +12,18 @@
 	{%- if element.element_type=='Content' -%}
 		{{ element.web_content_html }}
 	{%- elif element.element_type=='Image' -%}
-		<img src='{{ element.image_url }}' {%- if element.element_class -%}class='{{ element.element_class }}'{%- endif -%}>
+        <img src='{{ element.image_url }}' class="{{ element.element_class or '' }} {{ element.css_class or '' }}" />
+    {%- elif element.element_type=='Card' -%}
+        <div class="card">
+            <div class="card-body">
+                {{ element.web_content_html }}
+            </div>
+        </div>
 	{%- endif -%}
 {%- endmacro -%}
 
 {%- for section in sections -%}
-<section class='section {{ section.element_class or "" }} {{ section.hide and "hidden" or "" }}'>
+<section class='section {{ section.element_class or "" }} {{ section.css_class or "" }} {{ section.hide and "hidden" or "" }}'>
 	<div class='section-body container'>
 	{%- if section.section_intro -%}
 
@@ -32,7 +38,7 @@
 	{%- elif section.section_type == 'Grid' -%}
 		<div class='row'>
 		{%- for element in section.elements -%}
-			<div class='web-content col-md-{{ element.columns or 6 }} {{ element.element_class or "" }}'>
+			<div class='web-content col-md-{{ element.columns or 6 }} {{ element.element_class or "" }} {{ element.css_class or "" }}'>
 			{{ render_element(element) }}
 			</div>
 		{%- endfor -%}

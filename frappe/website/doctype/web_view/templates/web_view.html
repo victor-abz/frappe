@@ -1,6 +1,8 @@
+{% import "templates/includes/macros.html" as utils %}
 {% extends "templates/web.html" %}
 
-{% block page_content %}
+{% block page_container %}
+    {{ utils.inspect(_context_dict, 0) }}
 	{% include "frappe/website/doctype/web_view/templates/web_view_content.html" %}
 {% endblock %}
 

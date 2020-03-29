@@ -11,6 +11,7 @@
   "column_break_3",
   "columns",
   "element_class",
+  "css_class",
   "section_break_5",
   "section_type",
   "web_content_type",
@@ -25,7 +26,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Element Type",
-   "options": "Section\nContent\nHero\nParagraph\nImage\nQuote",
+   "options": "Section\nContent\nCard\nParagraph\nImage\nQuote",
    "reqd": 1
   },
   {
@@ -37,7 +38,7 @@
    "options": "\nList\nTabbed\nGrid"
   },
   {
-   "depends_on": "eval:doc.element_type==='Content'",
+   "depends_on": "eval:['Content', 'Card'].includes(doc.element_type)",
    "fieldname": "web_content_type",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -98,11 +99,16 @@
    "fieldname": "hide",
    "fieldtype": "Check",
    "label": "Hide"
+  },
+  {
+   "fieldname": "css_class",
+   "fieldtype": "Data",
+   "label": "CSS Class"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2020-03-17 17:06:37.157763",
+ "modified": "2020-03-27 20:34:35.444342",
  "modified_by": "Administrator",
  "module": "Website",
  "name": "Web View Item",

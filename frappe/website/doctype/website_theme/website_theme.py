@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from os import remove as delete_file
 from os.path import join as join_path, exists as path_exists
 
 class WebsiteTheme(Document):
@@ -45,6 +46,7 @@ class WebsiteTheme(Document):
 		'''Generate theme css if theme_scss has changed'''
 		doc_before_save = self.get_doc_before_save()
 		if doc_before_save is None or get_scss(self) != get_scss(doc_before_save):
+			self.delete_old_theme()
 			self.generate_bootstrap_theme()
 
 	def export_doc(self):
@@ -58,6 +60,15 @@ class WebsiteTheme(Document):
 		website_settings = frappe.get_doc("Website Settings", "Website Settings")
 		if getattr(website_settings, "website_theme", None) == self.name:
 			website_settings.clear_cache()
+
+	def delete_old_theme(self):
+		try:
+			file_path = join_path(frappe.utils.get_bench_path(), 'sites', self.theme_url.lstrip('/'))
+			if path_exists(file_path):
+				delete_file(file_path)
+		except Exception:
+			# ignore error if cannot delete file
+			pass
 
 	def generate_bootstrap_theme(self):
 		from subprocess import Popen, PIPE
@@ -123,5 +134,5 @@ def generate_theme_files_if_not_exist():
 			frappe.log_error(frappe.get_traceback(), "Theme File Generation Failed")
 
 def get_scss(doc):
-	return doc.theme_scss + '\n' + doc.custom_scss
+	return frappe.render_template('frappe/website/doctype/website_theme/website_theme_template.scss', doc.as_dict())
 

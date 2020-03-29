@@ -14,6 +14,9 @@
   "google_font",
   "font_size",
   "font_properties",
+  "enable_gradients",
+  "enable_rounded",
+  "enable_shadows",
   "column_break_7",
   "primary_color",
   "text_color",
@@ -142,10 +145,28 @@
    "fieldname": "font_properties",
    "fieldtype": "Data",
    "label": "Font Properties"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_gradients",
+   "fieldtype": "Check",
+   "label": "Enable Gradients"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_rounded",
+   "fieldtype": "Check",
+   "label": "Enable Rounded Corners"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_shadows",
+   "fieldtype": "Check",
+   "label": "Enable Shadows"
   }
  ],
  "links": [],
- "modified": "2020-03-18 18:24:57.469492",
+ "modified": "2020-03-27 20:04:29.897958",
  "modified_by": "Administrator",
  "module": "Website",
  "name": "Website Theme",
