@@ -352,7 +352,7 @@ class Importer:
 
 	def detect_date_formats(self, columns):
 		for col in columns:
-			if col.df and col.df.fieldtype in ['Date', 'Time', 'Datetime']:
+			if col.df and col.df.fieldtype in ["Date", "Time", "Datetime"]:
 				col.date_format = self.guess_date_format_for_column(col, columns)
 		return columns
 
@@ -378,7 +378,8 @@ class Importer:
 		value = cstr(value)
 
 		# convert boolean values to 0 or 1
-		if df.fieldtype == "Check" and value.lower().strip() in ["t", "f", "true", "false", "yes", "no", "y", "n"]:
+		valid_check_values = ["t", "f", "true", "false", "yes", "no", "y", "n"]
+		if df.fieldtype == "Check" and value.lower().strip() in valid_check_values:
 			value = value.lower().strip()
 			value = 1 if value in ["t", "true", "y", "yes"] else 0
 
@@ -425,8 +426,9 @@ class Importer:
 			date_values = [
 				row[column_index] for row in self.data[:PARSE_ROW_COUNT] if row[column_index]
 			]
-			date_formats = [guess_date_format(d) if isinstance(d, str) else None
-							for d in date_values]
+			date_formats = [
+				guess_date_format(d) if isinstance(d, str) else None for d in date_values
+			]
 			if not date_formats:
 				return
 			max_occurred_date_format = max(set(date_formats), key=date_formats.count)
@@ -854,9 +856,9 @@ class Importer:
 		id_value = doc[id_fieldname]
 		existing_doc = frappe.get_doc(self.doctype, id_value)
 		existing_doc.flags.updater_reference = {
-			'doctype': self.data_import.doctype,
-			'docname': self.data_import.name,
-			'label': _('via Data Import')
+			"doctype": self.data_import.doctype,
+			"docname": self.data_import.name,
+			"label": _("via Data Import"),
 		}
 		existing_doc.update(doc)
 		existing_doc.save()
