@@ -5,8 +5,8 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.core.doctype.data_import.importer_new import Importer
-from frappe.core.doctype.data_import.exporter_new import Exporter
+from frappe.core.doctype.data_import_legacy.importer_new import Importer
+from frappe.core.doctype.data_import_legacy.exporter_new import Exporter
 from frappe.core.page.background_jobs.background_jobs import get_info
 from frappe.utils.background_jobs import enqueue
 from frappe import _

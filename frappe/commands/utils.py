@@ -206,7 +206,7 @@ def export_doc(context, doctype, docname):
 @pass_context
 def export_json(context, doctype, path, name=None):
 	"Export doclist as json to the given path, use '-' as name for Singles."
-	from frappe.core.doctype.data_import import data_import
+	from frappe.core.doctype.data_import_legacy import data_import_legacy as data_import
 	for site in context.sites:
 		try:
 			frappe.init(site=site)
@@ -222,7 +222,7 @@ def export_json(context, doctype, path, name=None):
 @pass_context
 def export_csv(context, doctype, path):
 	"Export data import template with data for DocType"
-	from frappe.core.doctype.data_import import data_import
+	from frappe.core.doctype.data_import_legacy import data_import_legacy as data_import
 	for site in context.sites:
 		try:
 			frappe.init(site=site)
@@ -252,7 +252,7 @@ def export_fixtures(context, app=None):
 @pass_context
 def import_doc(context, path, force=False):
 	"Import (insert/update) doclist. If the argument is a directory, all files ending with .json are imported"
-	from frappe.core.doctype.data_import import data_import
+	from frappe.core.doctype.data_import_legacy import data_import_legacy as data_import
 
 	if not os.path.exists(path):
 		path = os.path.join('..', path)
@@ -280,7 +280,7 @@ def import_doc(context, path, force=False):
 @pass_context
 def import_csv(context, path, only_insert=False, submit_after_import=False, ignore_encoding_errors=False, no_email=True):
 	"Import CSV using data import"
-	from frappe.core.doctype.data_import import importer
+	from frappe.core.doctype.data_import_legacy import importer
 	from frappe.utils.csvutils import read_csv_content
 	site = get_site(context)
 
@@ -316,7 +316,7 @@ def import_csv(context, path, only_insert=False, submit_after_import=False, igno
 @pass_context
 def data_import(context, file_path, doctype, import_type=None, submit_after_import=False, mute_emails=True):
 	"Import documents in bulk from CSV or XLSX using data import"
-	from frappe.core.doctype.data_import.importer_new import Importer
+	from frappe.core.doctype.data_import_legacy.importer_new import Importer
 	site = get_site(context)
 
 	frappe.init(site=site)
