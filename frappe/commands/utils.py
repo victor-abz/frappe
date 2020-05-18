@@ -322,7 +322,7 @@ def data_import(context, file_path, doctype, import_type=None, submit_after_impo
 	frappe.init(site=site)
 	frappe.connect()
 
-	data_import = frappe.new_doc('Data Import Beta')
+	data_import = frappe.new_doc('Data Import')
 	data_import.submit_after_import = submit_after_import
 	data_import.mute_emails = mute_emails
 	data_import.import_type = 'Insert New Records' if import_type.lower() == 'insert' else 'Update Existing Records'

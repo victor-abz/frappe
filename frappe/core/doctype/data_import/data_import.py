@@ -12,7 +12,7 @@ from frappe.utils.background_jobs import enqueue
 from frappe import _
 
 
-class DataImportBeta(Document):
+class DataImport(Document):
 	def validate(self):
 		doc_before_save = self.get_doc_before_save()
 		if not self.import_file or (
@@ -63,7 +63,7 @@ class DataImportBeta(Document):
 
 def start_import(data_import):
 	"""This method runs in background job"""
-	data_import = frappe.get_doc("Data Import Beta", data_import)
+	data_import = frappe.get_doc("Data Import", data_import)
 	try:
 		i = Importer(data_import.reference_doctype, data_import=data_import)
 		i.import_data()
@@ -106,5 +106,5 @@ def download_template(
 
 @frappe.whitelist()
 def download_errored_template(data_import_name):
-	data_import = frappe.get_doc("Data Import Beta", data_import_name)
+	data_import = frappe.get_doc("Data Import", data_import_name)
 	data_import.export_errored_rows()

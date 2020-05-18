@@ -72,7 +72,7 @@ class TestImporter(unittest.TestCase):
 			frappe.utils.get_datetime_str('2019-05-20'))
 
 	def get_importer(self, doctype, content):
-		data_import = frappe.new_doc('Data Import Beta')
+		data_import = frappe.new_doc('Data Import')
 		data_import.import_type = 'Insert New Records'
 		i = Importer(doctype, content=content, data_import=data_import)
 		return i

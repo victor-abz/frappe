@@ -148,7 +148,7 @@
  "modified": "2020-02-17 15:35:04.386098",
  "modified_by": "faris@erpnext.com",
  "module": "Core",
- "name": "Data Import Beta",
+ "name": "Data Import",
  "owner": "Administrator",
  "permissions": [
   {
