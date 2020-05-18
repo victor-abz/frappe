@@ -6,6 +6,7 @@ import frappe
 
 
 def execute():
+	frappe.reload_doc("core", "doctype", "data_import_legacy")
 	frappe.db.sql(
 		"""
 		INSERT INTO `tabData Import Legacy`
