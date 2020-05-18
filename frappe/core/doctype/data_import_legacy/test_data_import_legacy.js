@@ -2,15 +2,15 @@
 // rename this file from _test_[name] to test_[name] to activate
 // and remove above this line
 
-QUnit.test("test: Data Import", function (assert) {
+QUnit.test("test: Data Import Legacy", function (assert) {
 	let done = assert.async();
 
 	// number of asserts
 	assert.expect(1);
 
 	frappe.run_serially([
-		// insert a new Data Import
-		() => frappe.tests.make('Data Import', [
+		// insert a new Data Import Legacy
+		() => frappe.tests.make('Data Import Legacy', [
 			// values to be set
 			{key: 'value'}
 		]),

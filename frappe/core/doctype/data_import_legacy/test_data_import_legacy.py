@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 
 import frappe, unittest
 from frappe.core.doctype.data_export import exporter
-from frappe.core.doctype.data_import import importer
+from frappe.core.doctype.data_import_legacy import importer
 from frappe.utils.csvutils import read_csv_content
 
-class TestDataImport(unittest.TestCase):
+class TestDataImportLegacy(unittest.TestCase):
 	def test_export(self):
 		exporter.export_data("User", all_doctypes=True, template=True)
 		content = read_csv_content(frappe.response.result)

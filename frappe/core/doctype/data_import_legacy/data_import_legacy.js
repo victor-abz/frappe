@@ -1,14 +1,14 @@
 // Copyright (c) 2017, Frappe Technologies and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Data Import', {
+frappe.ui.form.on('Data Import Legacy', {
 	onload: function(frm) {
 		if (frm.doc.__islocal) {
 			frm.set_value("action", "");
 		}
 
 		frappe.call({
-			method: "frappe.core.doctype.data_import.data_import.get_importable_doctypes",
+			method: "frappe.core.doctype.data_import_legacy.data_import_legacy.get_importable_doctypes",
 			callback: function (r) {
 				let importable_doctypes = r.message;
 				frm.set_query("reference_doctype", function () {
@@ -26,8 +26,8 @@ frappe.ui.form.on('Data Import', {
 		// should never check public
 		frm.fields_dict["import_file"].df.is_private = 1;
 
-		frappe.realtime.on("data_import_progress", function(data) {
-			if (data.data_import === frm.doc.name) {
+		frappe.realtime.on("data_import_legacy_progress", function(data) {
+			if (data.data_import_legacy === frm.doc.name) {
 				if (data.reload && data.reload === true) {
 					frm.reload_doc();
 				}
@@ -55,13 +55,13 @@ frappe.ui.form.on('Data Import', {
 			frm.page.set_indicator(__('Attach file'), 'orange');
 		} else {
 			if (frm.doc.import_status) {
-				const listview_settings = frappe.listview_settings['Data Import'];
+				const listview_settings = frappe.listview_settings['Data Import Legacy'];
 				const indicator = listview_settings.get_indicator(frm.doc);
 
 				frm.page.set_indicator(indicator[0], indicator[1]);
 
 				if (frm.doc.import_status === "In Progress") {
-					frm.dashboard.add_progress("Data Import Progress", "0");
+					frm.dashboard.add_progress("Data Import Legacy Progress", "0");
 					frm.set_read_only();
 					frm.refresh_fields();
 				}
@@ -82,7 +82,7 @@ frappe.ui.form.on('Data Import', {
 
 		if (frm.doc.reference_doctype && frm.doc.docstatus === 0) {
 			frm.add_custom_button(__("Download template"), function() {
-				frappe.data_import.download_dialog(frm).show();
+				frappe.data_import_legacy.download_dialog(frm).show();
 			});
 		}
 
@@ -91,9 +91,9 @@ frappe.ui.form.on('Data Import', {
 			frm.page.set_primary_action(__("Start Import"), function() {
 				frappe.call({
 					btn: frm.page.btn_primary,
-					method: "frappe.core.doctype.data_import.data_import.import_data",
+					method: "frappe.core.doctype.data_import_legacy.data_import_legacy.import_data",
 					args: {
-						data_import: frm.doc.name
+						data_import_legacy: frm.doc.name
 					}
 				});
 			}).addClass('btn btn-primary');
@@ -157,8 +157,8 @@ frappe.ui.form.on('Data Import', {
 	}
 });
 
-frappe.provide('frappe.data_import');
-frappe.data_import.download_dialog = function(frm) {
+frappe.provide('frappe.data_import_legacy');
+frappe.data_import_legacy.download_dialog = function(frm) {
 	var dialog;
 	const filter_fields = df => frappe.model.is_value_type(df) && !df.hidden;
 	const get_fields = dt => frappe.meta.get_docfields(dt).filter(filter_fields);

@@ -8,11 +8,11 @@ from frappe import _
 import frappe.modules.import_file
 from frappe.model.document import Document
 from frappe.utils.data import format_datetime
-from frappe.core.doctype.data_import.importer import upload
+from frappe.core.doctype.data_import_legacy.importer import upload
 from frappe.utils.background_jobs import enqueue
 
 
-class DataImport(Document):
+class DataImportLegacy(Document):
 	def autoname(self):
 		if not self.name:
 			self.name = "Import on " +format_datetime(self.creation)
@@ -26,7 +26,7 @@ class DataImport(Document):
 		# validate the template just after the upload
 		# if there is total_rows in the doc, it means that the template is already validated and error free
 		if self.import_file and not self.total_rows:
-			upload(data_import_doc=self, from_data_import="Yes", validate_template=True)
+			upload(data_import_legacy_doc=self, from_data_import_legacy="Yes", validate_template=True)
 
 
 @frappe.whitelist()
@@ -34,17 +34,17 @@ def get_importable_doctypes():
 	return frappe.cache().hget("can_import", frappe.session.user)
 
 @frappe.whitelist()
-def import_data(data_import):
-	frappe.db.set_value("Data Import", data_import, "import_status", "In Progress", update_modified=False)
-	frappe.publish_realtime("data_import_progress", {"progress": "0",
-		"data_import": data_import, "reload": True}, user=frappe.session.user)
+def import_data(data_import_legacy):
+	frappe.db.set_value("Data Import Legacy", data_import_legacy, "import_status", "In Progress", update_modified=False)
+	frappe.publish_realtime("data_import_legacy_progress", {"progress": "0",
+		"data_import_legacy": data_import_legacy, "reload": True}, user=frappe.session.user)
 
 	from frappe.core.page.background_jobs.background_jobs import get_info
 	enqueued_jobs = [d.get("job_name") for d in get_info()]
 
-	if data_import not in enqueued_jobs:
-		enqueue(upload, queue='default', timeout=6000, event='data_import', job_name=data_import,
-			data_import_doc=data_import, from_data_import="Yes", user=frappe.session.user)
+	if data_import_legacy not in enqueued_jobs:
+		enqueue(upload, queue='default', timeout=6000, event='data_import_legacy', job_name=data_import_legacy,
+			data_import_legacy_doc=data_import_legacy, from_data_import_legacy="Yes", user=frappe.session.user)
 
 
 def import_doc(path, overwrite=False, ignore_links=False, ignore_insert=False,
@@ -57,7 +57,7 @@ def import_doc(path, overwrite=False, ignore_links=False, ignore_insert=False,
 	for f in files:
 		if f.endswith(".json"):
 			frappe.flags.mute_emails = True
-			frappe.modules.import_file.import_file_by_path(f, data_import=True, force=True, pre_process=pre_process, reset_permissions=True)
+			frappe.modules.import_file.import_file_by_path(f, data_import_legacy=True, force=True, pre_process=pre_process, reset_permissions=True)
 			frappe.flags.mute_emails = False
 			frappe.db.commit()
 		elif f.endswith(".csv"):

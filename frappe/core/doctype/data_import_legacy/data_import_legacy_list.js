@@ -1,4 +1,4 @@
-frappe.listview_settings['Data Import'] = {
+frappe.listview_settings['Data Import Legacy'] = {
 	add_fields: ["import_status"],
 	has_indicator_for_draft: 1,
 	get_indicator: function(doc) {
@@ -24,7 +24,7 @@ frappe.listview_settings['Data Import'] = {
 	onload(listview) {
 		listview.page.set_title_sub(`
 			<span class="indicator blue">
-				<a class="text-muted" href="#List/Data Import Beta">${__('Try the new Data Import')}</a>
+				<a class="text-muted" href="#List/Data Import Legacy Beta">${__('Try the new Data Import Legacy')}</a>
 			</span>
 		`);
 	}
