@@ -19,7 +19,11 @@ class TestSessionDefaultSettings(unittest.TestCase):
 
 		set_session_default_values({"role": "Website Manager"})
 
+		frappe.flags.print_default_values = True
+
 		todo = frappe.get_doc(dict(doctype="ToDo", description="test session defaults set", assigned_by="Administrator")).insert()
+
+		frappe.flags.print_default_values = False
 		self.assertEqual(todo.role, "Website Manager")
 
 	def test_clear_session_defaults(self):
