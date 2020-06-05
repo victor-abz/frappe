@@ -53,6 +53,8 @@ def set_user_and_static_default_values(doc):
 	user_permissions = get_user_permissions()
 	defaults = frappe.defaults.get_defaults()
 
+	print(defaults)
+
 	for df in doc.meta.get("fields"):
 		if df.fieldtype in data_fieldtypes:
 			# user permissions for link options
