@@ -67,12 +67,18 @@ def set_user_and_static_default_values(doc):
 			if user_default_value is not None:
 				# if fieldtype is link check if doc exists
 				if not df.fieldtype == "Link" or frappe.db.exists(df.options, user_default_value):
+					if frappe.flags.print_default_values:
+						print('setting user default value')
+						print(df.fieldname, user_default_value)
 					doc.set(df.fieldname, user_default_value)
 
 			else:
 				if df.fieldname != doc.meta.title_field:
 					static_default_value = get_static_default_value(df, doctype_user_permissions, allowed_records)
 					if static_default_value is not None:
+						if frappe.flags.print_default_values:
+							print('setting static default value')
+							print(df.fieldname, static_default_value)
 						doc.set(df.fieldname, static_default_value)
 
 def get_user_default_value(df, defaults, doctype_user_permissions, allowed_records, default_doc):
